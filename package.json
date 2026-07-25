@@ -6,7 +6,21 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "echo \"No tests configured yet. Add tests and update this script.\" && exit 0",
+    "format": "prettier --write \"**/*.{ts,tsx,css,mjs,mts}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,css,mjs,mts}\"",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .next node_modules",
+    "analyze": "ANALYZE=true next build",
+    "validate": "npm run typecheck && npm run lint && npm run build",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "gen:api": "openapi-typescript ../backend/openapi.json -o src/lib/types/api.ts",
+    "gen:contracts": "tsx scripts/generate-contract-types.ts",
+    "dev:proxy": "concurrently \"next dev\" \"tsx scripts/dev-proxy.ts\"",
+    "postinstall": "husky",
+    "prepare": "husky"
   },
   "dependencies": {
     "next": "16.1.6",
@@ -18,9 +32,14 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "husky": "^9",
+    "openapi-typescript": "^7",
+    "prettier": "^3",
     "tailwindcss": "^4",
+    "tsx": "^4",
     "typescript": "^5"
   }
 }
