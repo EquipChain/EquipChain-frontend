@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -13,8 +15,43 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Equipchain Dashboard",
-  description: "Next.js frontend dashboard for Equipchain utility management on Stellar Soroban",
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: "EquipChain Dashboard",
+    template: "%s | EquipChain",
+  },
+  description:
+    "Utility metering and billing dashboard for monitoring meters, managing gas buffers, and tracking usage on Stellar Soroban.",
+  openGraph: {
+    title: "EquipChain Dashboard",
+    description:
+      "Utility metering and billing dashboard for monitoring meters, managing gas buffers, and tracking usage on Stellar Soroban.",
+    url: baseUrl,
+    siteName: "EquipChain",
+    type: "website",
+    locale: "en_US",
+    images: [
+      {
+        url: `${baseUrl}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: "EquipChain Dashboard",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@equipchain",
+    creator: "@equipchain",
+    title: "EquipChain Dashboard",
+    description:
+      "Utility metering and billing dashboard for monitoring meters, managing gas buffers, and tracking usage on Stellar Soroban.",
+    images: [`${baseUrl}/og-image.png`],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
