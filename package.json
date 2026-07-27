@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test": "echo \"No tests configured yet. Add tests and update this script.\" && exit 0",
@@ -12,7 +12,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,css,mjs,mts}\"",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next node_modules",
-    "analyze": "ANALYZE=true next build",
+    "analyze": "ANALYZE=true next build --webpack",
     "validate": "npm run typecheck && npm run lint && npm run build",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -25,7 +25,10 @@
   "dependencies": {
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "@serwist/next": "^9.0.11",
+    "serwist": "^9.0.11",
+    "idb": "^8.0.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
