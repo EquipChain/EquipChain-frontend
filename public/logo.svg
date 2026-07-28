@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" fill="none">
+  <path d="M12 25L20 10L28 25L20 40L12 25Z" fill="#3b82f6"/>
+  <path d="M20 40L28 25L36 40L20 40Z" fill="#1d4ed8" opacity="0.7"/>
+  <text x="44" y="30" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="currentColor">EquipChain</text>
+</svg>
