@@ -9,13 +9,19 @@ export interface OnlineStatus {
 }
 
 export function useOnlineStatus(): OnlineStatus {
-  const [isOnline, setIsOnline] = useState<boolean>(
-    typeof navigator !== 'undefined' ? navigator.onLine : true
-  );
+  const [isOnline, setIsOnline] = useState<boolean>(true);
   const [wasOffline, setWasOffline] = useState(false);
-  const [lastOnlineTime, setLastOnlineTime] = useState<number | null>(
-    typeof navigator !== 'undefined' && navigator.onLine ? Date.now() : null
-  );
+  const [lastOnlineTime, setLastOnlineTime] = useState<number | null>(null);
+
+  // Initialize on mount (client-side only)
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      setIsOnline(navigator.onLine);
+      if (navigator.onLine) {
+        setLastOnlineTime(Date.now());
+      }
+    });
+  }, []);
 
   const handleOnline = useCallback(() => {
     setIsOnline(true);

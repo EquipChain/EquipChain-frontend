@@ -8,7 +8,10 @@ export default function OfflinePage() {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   useEffect(() => {
-    setLastUpdated(new Date().toLocaleString());
+    const timer = setTimeout(() => {
+      setLastUpdated(new Date().toLocaleString());
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleRetry = () => {
