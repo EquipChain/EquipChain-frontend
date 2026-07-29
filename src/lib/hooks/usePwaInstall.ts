@@ -32,7 +32,7 @@ export function usePwaInstall(): PwaInstall {
       typeof window !== 'undefined' &&
       window.matchMedia('(display-mode: standalone)').matches
     ) {
-      setIsInstalled(true);
+      requestAnimationFrame(() => setIsInstalled(true));
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
