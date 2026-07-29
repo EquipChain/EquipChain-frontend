@@ -1,14 +1,13 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { OfflineBanner } from "@/src/components/common/OfflineBanner";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
-
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -22,6 +21,7 @@ export const metadata: Metadata = {
   },
   description:
     "Utility metering and billing dashboard for monitoring meters, managing gas buffers, and tracking usage on Stellar Soroban.",
+  manifest: "/manifest.json",
   openGraph: {
     title: "EquipChain Dashboard",
     description:
@@ -64,6 +64,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <OfflineBanner />
         {children}
       </body>
     </html>
