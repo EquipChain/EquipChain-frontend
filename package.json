@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "echo \"No tests configured yet. Add tests and update this script.\" && exit 0",
+    "test:integration": "playwright test -c playwright.integration.config.ts",
     "format": "prettier --write \"**/*.{ts,tsx,css,mjs,mts}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,css,mjs,mts}\"",
     "typecheck": "tsc --noEmit",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@playwright/test": "^1.52.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

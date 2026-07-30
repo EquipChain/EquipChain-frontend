@@ -1,0 +1,36 @@
+name: Integration (Playwright + Soroban)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      stellar:
+        image: stellar/quickstart:testing
+        ports:
+          - 8000:8000
+        options: >-
+          --health-cmd "curl -fsSL -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getHealth\"}' http://localhost:8000/rpc | grep -q healthy"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        command: ["--local", "--enable-stellar-rpc"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:integration
+        env:
+          CI: "true"
+          NEXT_PUBLIC_SOROBAN_RPC_URL: http://127.0.0.1:8000/rpc
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
+
