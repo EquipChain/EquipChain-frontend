@@ -1,11 +1,15 @@
 import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
 import path from "node:path";
 
-// `react()` is typed against the standalone vite install while vitest bundles
-// its own vite copy; cast avoids the duplicate-vite type identity conflict.
+// No @vitejs/plugin-react here: vitest transforms TSX through esbuild, and
+// `jsx: "automatic"` enables the modern JSX runtime for tests without
+// pulling the plugin's duplicate-vite/refresh preamble machinery (which
+// breaks under vitest's bundled vite copy and is unnecessary outside dev
+// servers — Next handles the app build itself).
 export default defineConfig({
-  plugins: [react() as never],
+  esbuild: {
+    jsx: "automatic",
+  },
   test: {
     environment: "jsdom",
     globals: true,
