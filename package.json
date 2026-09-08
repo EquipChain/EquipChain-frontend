@@ -7,7 +7,9 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test": "echo \"No tests configured yet. Add tests and update this script.\" && exit 0",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:integration": "playwright test -c playwright.integration.config.ts",
     "format": "prettier --write \"**/*.{ts,tsx,css,mjs,mts}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,css,mjs,mts}\"",
@@ -33,19 +35,26 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
     "@playwright/test": "^1.52.0",
+    "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^3.1.0",
     "concurrently": "^9",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "husky": "^9",
+    "jsdom": "^30.0.1",
+    "lucide-react": "^1.43.0",
     "openapi-typescript": "^7",
     "prettier": "^3",
     "tailwindcss": "^4",
     "tsx": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }
