@@ -1,6 +1,9 @@
 "use client";
 
 import { ExportButton } from "@/src/components/export/ExportButton";
+import { PageHeader } from "@/src/components/layout/PageHeader";
+import { DataTable, type DataTableColumn } from "@/src/components/ui/DataTable";
+import { StatusBadge } from "@/src/components/ui/Badge";
 
 // Sample stream columns for export
 const STREAM_COLUMNS = [
@@ -15,7 +18,19 @@ const STREAM_COLUMNS = [
 ];
 
 // Placeholder data — replace with actual API data fetching
-const sampleStreamData = [
+interface StreamRow {
+  [key: string]: unknown;
+  id: string;
+  meterId: string;
+  type: string;
+  flowRate: string;
+  status: string;
+  lastData: string;
+  uptime: string;
+  startedAt: string;
+}
+
+const sampleStreamData: StreamRow[] = [
   {
     id: "stream-001",
     meterId: "meter-001",
@@ -48,19 +63,54 @@ const sampleStreamData = [
   },
 ];
 
+/** Pulsing dot for live streams; static dot otherwise. */
+function LiveIndicator({ live }: { live: boolean }) {
+  return (
+    <span className="relative inline-flex h-2 w-2" aria-hidden="true">
+      {live && (
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+      )}
+      <span
+        className={`relative inline-flex h-2 w-2 rounded-full ${
+          live ? "bg-success" : "bg-text-muted"
+        }`}
+      />
+    </span>
+  );
+}
+
+const streamTableColumns: DataTableColumn<StreamRow>[] = [
+  {
+    key: "id",
+    header: "Stream ID",
+    mobileTitle: true,
+    cell: (row) => <span className="font-mono text-xs">{row.id}</span>,
+  },
+  { key: "meterId", header: "Meter ID" },
+  { key: "type", header: "Type" },
+  { key: "flowRate", header: "Flow Rate", align: "right" },
+  {
+    key: "status",
+    header: "Status",
+    cell: (row) => (
+      <span className="inline-flex items-center gap-2">
+        <LiveIndicator live={row.status === "Streaming"} />
+        <StatusBadge status={row.status} />
+      </span>
+    ),
+  },
+  { key: "lastData", header: "Last Data Point" },
+  { key: "uptime", header: "Uptime", align: "right" },
+  { key: "startedAt", header: "Started", sortable: false, hideOnMobile: true },
+];
+
 export function StreamsPageClient() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
-      <main className="flex flex-col items-center gap-8 py-32 px-16 w-full max-w-5xl">
-        <div className="flex items-center justify-between w-full">
-          <div>
-            <h1 className="text-4xl font-bold text-black dark:text-zinc-50">
-              Streams
-            </h1>
-            <p className="text-zinc-600 dark:text-zinc-400 mt-2">
-              Monitor real-time data streams from your utility meters.
-            </p>
-          </div>
+    <div className="flex flex-col gap-8">
+      <PageHeader
+        title="Streams"
+        description="Monitor real-time data streams from your utility meters."
+        actions={
           <ExportButton
             title="Streams"
             dataType="streams"
@@ -69,62 +119,17 @@ export function StreamsPageClient() {
             label="Export"
             variant="secondary"
           />
-        </div>
+        }
+      />
 
-        {/* Data table placeholder */}
-        <div className="w-full border border-border rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-surface-secondary border-b border-border">
-              <tr>
-                {STREAM_COLUMNS.filter((c) => c.enabled).map((col) => (
-                  <th
-                    key={col.key}
-                    className="text-left px-4 py-3 font-medium text-text-secondary"
-                  >
-                    {col.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sampleStreamData.map((stream) => (
-                <tr
-                  key={stream.id}
-                  className="border-b border-border-light hover:bg-surface-secondary transition-colors"
-                >
-                  <td className="px-4 py-3 text-text-primary font-mono text-xs">
-                    {stream.id}
-                  </td>
-                  <td className="px-4 py-3 text-text-primary">
-                    {stream.meterId}
-                  </td>
-                  <td className="px-4 py-3 text-text-primary">{stream.type}</td>
-                  <td className="px-4 py-3 text-text-primary">
-                    {stream.flowRate}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                        stream.status === "Streaming"
-                          ? "bg-success-light text-success-dark dark:bg-green-900/20 dark:text-green-400"
-                          : "bg-warning-light text-warning-dark dark:bg-yellow-900/20 dark:text-yellow-400"
-                      }`}
-                    >
-                      {stream.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-text-muted">
-                    {stream.lastData}
-                  </td>
-                  <td className="px-4 py-3 text-text-primary">
-                    {stream.uptime}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </main>
+      <DataTable
+        columns={streamTableColumns}
+        rows={sampleStreamData}
+        getRowId={(row) => row.id}
+        initialSortKey="id"
+        caption={`${sampleStreamData.length} streams`}
+        ariaLabel="Data streams"
+      />
     </div>
   );
 }
