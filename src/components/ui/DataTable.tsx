@@ -22,8 +22,8 @@ export interface DataTableColumn<T> {
   header: string;
   /** Renders the cell content for a row (defaults to the raw value) */
   cell?: (row: T) => ReactNode;
-  /** Renders the row's title line in mobile card layout (defaults to first column) */
-  mobileTitle?: (row: T) => ReactNode;
+  /** Marks this column's value as the title line in mobile card layout */
+  mobileTitle?: boolean;
   /** Hide this column in the mobile card layout */
   hideOnMobile?: boolean;
   /** Left-align (default) or right-align the column */
@@ -119,7 +119,9 @@ export function DataTable<T>({
 
   const mobileTitleKey =
     columns.find((c) => c.mobileTitle)?.key ?? columns[0]?.key;
-  const mobileColumns = columns.filter((c) => !c.hideOnMobile);
+  const mobileColumns = columns.filter(
+    (c) => !c.hideOnMobile && c.key !== mobileTitleKey
+  );
 
   return (
     <div className="space-y-2">

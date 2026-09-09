@@ -1,6 +1,9 @@
 "use client";
 
 import { ExportButton } from "@/src/components/export/ExportButton";
+import { PageHeader } from "@/src/components/layout/PageHeader";
+import { DataTable, type DataTableColumn } from "@/src/components/ui/DataTable";
+import { StatusBadge } from "@/src/components/ui/Badge";
 
 // Sample meter columns for export
 const METER_COLUMNS = [
@@ -16,7 +19,21 @@ const METER_COLUMNS = [
 ];
 
 // Placeholder data — replace with actual API data fetching
-const sampleMeterData = [
+// (index signature keeps the rows compatible with ExportButton's data prop)
+interface MeterRow {
+  [key: string]: unknown;
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  lastReading: string;
+  totalConsumption: string;
+  rate: string;
+  lastUpdated: string;
+  ownerAddress: string;
+}
+
+const sampleMeterData: MeterRow[] = [
   {
     id: "meter-001",
     name: "Main Building",
@@ -52,19 +69,29 @@ const sampleMeterData = [
   },
 ];
 
+const meterTableColumns: DataTableColumn<MeterRow>[] = [
+  { key: "id", header: "Meter ID", mobileTitle: true },
+  { key: "name", header: "Name" },
+  { key: "type", header: "Type" },
+  {
+    key: "status",
+    header: "Status",
+    cell: (row) => <StatusBadge status={row.status} />,
+  },
+  { key: "lastReading", header: "Last Reading", align: "right" },
+  { key: "totalConsumption", header: "Total Consumption", align: "right" },
+  { key: "rate", header: "Rate", align: "right" },
+  { key: "lastUpdated", header: "Last Updated" },
+  { key: "ownerAddress", header: "Owner Address", sortable: false, hideOnMobile: true },
+];
+
 export function MetersPageClient() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
-      <main className="flex flex-col items-center gap-8 py-32 px-16 w-full max-w-5xl">
-        <div className="flex items-center justify-between w-full">
-          <div>
-            <h1 className="text-4xl font-bold text-black dark:text-zinc-50">
-              Meters
-            </h1>
-            <p className="text-zinc-600 dark:text-zinc-400 mt-2">
-              View and manage your utility meters.
-            </p>
-          </div>
+    <div className="flex flex-col gap-8">
+      <PageHeader
+        title="Meters"
+        description="View and manage your utility meters."
+        actions={
           <ExportButton
             title="Meters"
             dataType="meters"
@@ -73,59 +100,17 @@ export function MetersPageClient() {
             label="Export"
             variant="secondary"
           />
-        </div>
+        }
+      />
 
-        {/* Data table placeholder */}
-        <div className="w-full border border-border rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-surface-secondary border-b border-border">
-              <tr>
-                {METER_COLUMNS.filter((c) => c.enabled).map((col) => (
-                  <th
-                    key={col.key}
-                    className="text-left px-4 py-3 font-medium text-text-secondary"
-                  >
-                    {col.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sampleMeterData.map((meter) => (
-                <tr
-                  key={meter.id}
-                  className="border-b border-border-light hover:bg-surface-secondary transition-colors"
-                >
-                  <td className="px-4 py-3 text-text-primary">{meter.id}</td>
-                  <td className="px-4 py-3 text-text-primary">{meter.name}</td>
-                  <td className="px-4 py-3 text-text-primary">{meter.type}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                        meter.status === "Active"
-                          ? "bg-success-light text-success-dark dark:bg-green-900/20 dark:text-green-400"
-                          : "bg-surface-tertiary text-text-muted"
-                      }`}
-                    >
-                      {meter.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-text-primary">
-                    {meter.lastReading}
-                  </td>
-                  <td className="px-4 py-3 text-text-primary">
-                    {meter.totalConsumption}
-                  </td>
-                  <td className="px-4 py-3 text-text-primary">{meter.rate}</td>
-                  <td className="px-4 py-3 text-text-muted">
-                    {meter.lastUpdated}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </main>
+      <DataTable
+        columns={meterTableColumns}
+        rows={sampleMeterData}
+        getRowId={(row) => row.id}
+        initialSortKey="name"
+        caption={`${sampleMeterData.length} meters`}
+        ariaLabel="Utility meters"
+      />
     </div>
   );
 }
