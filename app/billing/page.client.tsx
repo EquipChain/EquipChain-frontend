@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { FileText } from "lucide-react";
 import { ExportButton } from "@/src/components/export/ExportButton";
+import { PageHeader } from "@/src/components/layout/PageHeader";
+import { DataTable, type DataTableColumn } from "@/src/components/ui/DataTable";
+import { StatusBadge } from "@/src/components/ui/Badge";
+import { Button } from "@/src/components/ui/Button";
 import { InvoiceTemplate } from "@/src/components/export/InvoiceTemplate";
 import type { InvoiceData } from "@/src/components/export/InvoiceTemplate";
 
@@ -19,7 +23,19 @@ const BILLING_COLUMNS = [
 ];
 
 // Placeholder data — replace with actual API data fetching
-const sampleBillingData = [
+interface BillingRow {
+  [key: string]: unknown;
+  id: string;
+  meterId: string;
+  period: string;
+  consumption: string;
+  rate: string;
+  amount: string;
+  status: string;
+  dueDate: string;
+}
+
+const sampleBillingData: BillingRow[] = [
   {
     id: "INV-2024-001",
     meterId: "meter-001",
@@ -50,6 +66,28 @@ const sampleBillingData = [
     status: "Overdue",
     dueDate: "2024-03-01",
   },
+];
+
+const billingTableColumns: DataTableColumn<BillingRow>[] = [
+  { key: "id", header: "Invoice #", mobileTitle: true },
+  { key: "meterId", header: "Meter ID" },
+  { key: "period", header: "Period" },
+  { key: "consumption", header: "Consumption", align: "right" },
+  { key: "rate", header: "Rate", align: "right" },
+  {
+    key: "amount",
+    header: "Amount",
+    align: "right",
+    cell: (row) => (
+      <span className="font-medium text-text-primary">{row.amount}</span>
+    ),
+  },
+  {
+    key: "status",
+    header: "Status",
+    cell: (row) => <StatusBadge status={row.status} />,
+  },
+  { key: "dueDate", header: "Due Date" },
 ];
 
 // Sample invoice data for the PDF template
@@ -98,25 +136,20 @@ export function BillingPageClient() {
   const [showInvoice, setShowInvoice] = useState(false);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
-      <main className="flex flex-col items-center gap-8 py-32 px-16 w-full max-w-5xl">
-        <div className="flex items-center justify-between w-full">
-          <div>
-            <h1 className="text-4xl font-bold text-black dark:text-zinc-50">
-              Billing
-            </h1>
-            <p className="text-zinc-600 dark:text-zinc-400 mt-2">
-              View billing history, manage payments, and track usage costs.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
+    <div className="flex flex-col gap-8">
+      <PageHeader
+        title="Billing"
+        description="View billing history, manage payments, and track usage costs."
+        actions={
+          <>
+            <Button
+              variant="secondary"
               onClick={() => setShowInvoice(!showInvoice)}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-surface-secondary text-text-secondary hover:text-text-primary hover:bg-surface-tertiary border border-border transition-all duration-200"
+              aria-expanded={showInvoice}
             >
               <FileText className="h-4 w-4" aria-hidden="true" />
               {showInvoice ? "Hide Invoice" : "View Invoice"}
-            </button>
+            </Button>
             <ExportButton
               title="Billing History"
               dataType="billing"
@@ -125,75 +158,25 @@ export function BillingPageClient() {
               label="Export"
               variant="secondary"
             />
-          </div>
-        </div>
+          </>
+        }
+      />
 
-        {/* Invoice Template (PDF printable) */}
-        {showInvoice && (
-          <div className="w-full border border-border rounded-xl overflow-hidden shadow-lg">
-            <InvoiceTemplate data={sampleInvoice} />
-          </div>
-        )}
-
-        {/* Data table */}
-        <div className="w-full border border-border rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-surface-secondary border-b border-border">
-              <tr>
-                {BILLING_COLUMNS.filter((c) => c.enabled).map((col) => (
-                  <th
-                    key={col.key}
-                    className="text-left px-4 py-3 font-medium text-text-secondary"
-                  >
-                    {col.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sampleBillingData.map((bill) => (
-                <tr
-                  key={bill.id}
-                  className="border-b border-border-light hover:bg-surface-secondary transition-colors"
-                >
-                  <td className="px-4 py-3 text-text-primary font-medium">
-                    {bill.id}
-                  </td>
-                  <td className="px-4 py-3 text-text-primary">
-                    {bill.meterId}
-                  </td>
-                  <td className="px-4 py-3 text-text-primary">
-                    {bill.period}
-                  </td>
-                  <td className="px-4 py-3 text-text-primary">
-                    {bill.consumption}
-                  </td>
-                  <td className="px-4 py-3 text-text-primary">{bill.rate}</td>
-                  <td className="px-4 py-3 text-text-primary font-medium">
-                    {bill.amount}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                        bill.status === "Paid"
-                          ? "bg-success-light text-success-dark dark:bg-green-900/20 dark:text-green-400"
-                          : bill.status === "Pending"
-                            ? "bg-warning-light text-warning-dark dark:bg-yellow-900/20 dark:text-yellow-400"
-                            : "bg-error-light text-error-dark dark:bg-red-900/20 dark:text-red-400"
-                      }`}
-                    >
-                      {bill.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-text-muted">
-                    {bill.dueDate}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Invoice Template (PDF printable) */}
+      {showInvoice && (
+        <div className="w-full overflow-hidden rounded-xl border border-border shadow-lg">
+          <InvoiceTemplate data={sampleInvoice} />
         </div>
-      </main>
+      )}
+
+      <DataTable
+        columns={billingTableColumns}
+        rows={sampleBillingData}
+        getRowId={(row) => row.id}
+        initialSortKey="id"
+        caption={`${sampleBillingData.length} invoices`}
+        ariaLabel="Billing history"
+      />
     </div>
   );
 }
