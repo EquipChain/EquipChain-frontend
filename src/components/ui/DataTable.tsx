@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown, Database } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { Skeleton } from "./Skeleton";
+import { EmptyState } from "./EmptyState";
 
 // ============================================================================
 // DataTable — sortable, accessible, responsive data table
@@ -109,12 +110,7 @@ export function DataTable<T>({
   }
 
   if (rows.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-surface px-6 py-16 text-center">
-        <Database className="h-8 w-8 text-text-muted" aria-hidden="true" />
-        <p className="text-sm text-text-secondary">{emptyMessage}</p>
-      </div>
-    );
+    return <EmptyState title={emptyMessage} />;
   }
 
   const mobileTitleKey =
