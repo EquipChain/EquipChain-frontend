@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -30,6 +30,20 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+// Viewport is a separate export in the App Router: folding these values into
+// `metadata` is silently ignored, and without them mobile browsers fall back to
+// a 980px layout viewport (pinch-zoom required) and the PWA/browser chrome
+// picks no theme color. The dark value pairs with the `.dark` class that
+// ThemeProvider toggles on <html>.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
