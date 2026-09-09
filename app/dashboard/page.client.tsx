@@ -23,8 +23,6 @@ const sampleDashboardData = [
   { label: "Monthly Spend", value: "$1,245.80", change: "-3.2%", trend: "down" },
 ];
 
-const TREND_VARIANT = { up: "success", down: "error", stable: "neutral" } as const;
-
 export function DashboardPageClient() {
   return (
     <div className="flex flex-col gap-8">
