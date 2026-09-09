@@ -9,6 +9,7 @@ import {
   THEME_COOKIE,
   type Theme,
 } from "@/src/components/theme/ThemeProvider";
+import { ToastProvider } from "@/src/components/ui/toast";
 
 // Read the persisted theme choice server-side so the correct theme class is
 // on <html> in the very first paint — no flash of the wrong theme.
@@ -84,8 +85,10 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider initialTheme={initialTheme}>
-          <OfflineBanner />
-          <AppShell>{children}</AppShell>
+          <ToastProvider>
+            <OfflineBanner />
+            <AppShell>{children}</AppShell>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>
