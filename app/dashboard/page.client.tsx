@@ -1,6 +1,9 @@
 "use client";
 
 import { ExportButton } from "@/src/components/export/ExportButton";
+import { PageHeader } from "@/src/components/layout/PageHeader";
+import { Card } from "@/src/components/ui/Card";
+import { StatusBadge } from "@/src/components/ui/Badge";
 
 // Sample dashboard summary columns for export
 const DASHBOARD_COLUMNS = [
@@ -20,19 +23,15 @@ const sampleDashboardData = [
   { label: "Monthly Spend", value: "$1,245.80", change: "-3.2%", trend: "down" },
 ];
 
+const TREND_VARIANT = { up: "success", down: "error", stable: "neutral" } as const;
+
 export function DashboardPageClient() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
-      <main className="flex flex-col items-center gap-8 py-32 px-16 w-full max-w-5xl">
-        <div className="flex items-center justify-between w-full">
-          <div>
-            <h1 className="text-4xl font-bold text-black dark:text-zinc-50">
-              Dashboard
-            </h1>
-            <p className="text-zinc-600 dark:text-zinc-400 mt-2">
-              Overview of your utility meters, usage statistics, and recent activity.
-            </p>
-          </div>
+    <div className="flex flex-col gap-8">
+      <PageHeader
+        title="Dashboard"
+        description="Overview of your utility meters, usage statistics, and recent activity."
+        actions={
           <ExportButton
             title="Dashboard Summary"
             dataType="meters"
@@ -41,34 +40,23 @@ export function DashboardPageClient() {
             label="Export"
             variant="secondary"
           />
-        </div>
+        }
+      />
 
-        {/* Summary cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-          {sampleDashboardData.map((item) => (
-            <div
-              key={item.label}
-              className="p-5 border border-border rounded-xl bg-surface hover:border-brand-300 transition-colors"
-            >
-              <p className="text-sm text-text-muted">{item.label}</p>
-              <p className="text-2xl font-bold text-text-primary mt-1">
-                {item.value}
-              </p>
-              <p
-                className={`text-sm mt-1 ${
-                  item.trend === "up"
-                    ? "text-success"
-                    : item.trend === "down"
-                      ? "text-error"
-                      : "text-text-muted"
-                }`}
-              >
-                {item.change}
-              </p>
+      {/* Summary cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {sampleDashboardData.map((item) => (
+          <Card key={item.label}>
+            <p className="text-sm text-text-muted">{item.label}</p>
+            <p className="mt-1 text-2xl font-bold text-text-primary">
+              {item.value}
+            </p>
+            <div className="mt-1">
+              <StatusBadge status={item.change} />
             </div>
-          ))}
-        </div>
-      </main>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
