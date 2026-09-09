@@ -71,10 +71,30 @@
 
 /* Dark Theme — applies when the user selects dark, or on a dark OS with
    "system" selected. The .dark class is toggled by ThemeProvider; the media
-   query covers the pre-hydration frame. */
-.dark,
-@media (prefers-color-scheme: dark) {
+   query covers the pre-hydration frame before the class exists. Two separate
+   blocks are REQUIRED: `.dark { :root }` was previously written as an invalid
+   `.dark, @media (...)` selector list, which is a parse error — the parser
+   dropped the @media arm and with it every dark token for system-dark users
+   until React mounted the .dark class (FOUC), and some parsers discarded the
+   whole rule. Splitting them gives identical token values under both arms. */
+.dark {
   :root {
+    --color-surface: #0f172a;
+    --color-surface-secondary: #1e293b;
+    --color-surface-tertiary: #334155;
+    --color-border: #334155;
+    --color-border-light: #1e293b;
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #94a3b8;
+    --color-text-muted: #64748b;
+    --color-text-inverse: #0f172a;
+    --color-background: #0a0a0a;
+    --color-foreground: #ededed;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
     --color-surface: #0f172a;
     --color-surface-secondary: #1e293b;
     --color-surface-tertiary: #334155;
@@ -107,4 +127,18 @@ body {
 ::selection {
   background: var(--color-brand-200);
   color: var(--color-brand-900);
+}
+
+/* Respect user motion preferences ( vestibular safety ) — global default;
+   components that need motion to communicate state provide a static
+   equivalent via (prefers-reduced-motion) variants where required. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
