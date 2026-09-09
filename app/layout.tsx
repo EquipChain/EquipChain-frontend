@@ -1,8 +1,24 @@
 ﻿import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { OfflineBanner } from "@/src/components/common/OfflineBanner";
 import { AppShell } from "@/src/components/layout/AppShell";
+import {
+  ThemeProvider,
+  THEME_COOKIE,
+  type Theme,
+} from "@/src/components/theme/ThemeProvider";
+
+// Read the persisted theme choice server-side so the correct theme class is
+// on <html> in the very first paint — no flash of the wrong theme.
+async function getInitialTheme(): Promise<Theme> {
+  const cookieStore = await cookies();
+  const value = cookieStore.get(THEME_COOKIE)?.value;
+  return value === "light" || value === "dark" || value === "system"
+    ? value
+    : "system";
+}
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 const geistSans = Geist({
@@ -55,18 +71,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const initialTheme = await getInitialTheme();
+
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <OfflineBanner />
-        <AppShell>{children}</AppShell>
+        <ThemeProvider initialTheme={initialTheme}>
+          <OfflineBanner />
+          <AppShell>{children}</AppShell>
+        </ThemeProvider>
       </body>
     </html>
   );

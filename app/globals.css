@@ -69,7 +69,10 @@
   --radius-full: 9999px;
 }
 
-/* Dark Theme */
+/* Dark Theme — applies when the user selects dark, or on a dark OS with
+   "system" selected. The .dark class is toggled by ThemeProvider; the media
+   query covers the pre-hydration frame. */
+.dark,
 @media (prefers-color-scheme: dark) {
   :root {
     --color-surface: #0f172a;
