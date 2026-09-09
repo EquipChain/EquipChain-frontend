@@ -2,6 +2,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { OfflineBanner } from "@/src/components/common/OfflineBanner";
+import { AppShell } from "@/src/components/layout/AppShell";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 const geistSans = Geist({
@@ -65,7 +66,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <OfflineBanner />
-        {children}
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
