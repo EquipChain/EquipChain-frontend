@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Gauge, Receipt, Radio, Menu, X } from "lucide-react";
+import { ThemeToggle } from "@/src/components/theme/ThemeToggle";
 
 // ============================================================================
 // AppShell — persistent top navigation for every page
@@ -103,6 +104,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               })}
             </ul>
           </nav>
+
+          {/* Theme switcher — hidden on mobile for space; theme still applies */}
+          <div className="hidden md:block">
+            <ThemeToggle />
+          </div>
 
           {/* Mobile menu toggle */}
           <button
