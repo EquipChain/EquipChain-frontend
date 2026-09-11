@@ -17,7 +17,6 @@ function sanitizeFormulaInjections(str: string): string {
   }
   // Strip control characters that some spreadsheet apps interpret as
   // macro invocation shortcuts.
-  // eslint-disable-next-line no-control-regex
   if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(str)) {
     return str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
   }
