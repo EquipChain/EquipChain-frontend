@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Gauge, Receipt, Radio, Menu, X } from "lucide-react";
+import { Menu, X, Gauge } from "lucide-react";
 import { ThemeToggle } from "@/src/components/theme/ThemeToggle";
+import { NAV_ITEMS, isActiveNavPath } from "@/src/lib/navigation";
 
 // ============================================================================
 // AppShell — persistent top navigation for every page
@@ -14,19 +15,8 @@ import { ThemeToggle } from "@/src/components/theme/ThemeToggle";
 // gives every route a shared header, active-section highlighting, a mobile
 // drawer, and skip-link/focus handling for accessibility.
 
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/meters", label: "Meters", icon: Gauge },
-  { href: "/billing", label: "Billing", icon: Receipt },
-  { href: "/streams", label: "Streams", icon: Radio },
-] as const;
-
-function isActivePath(pathname: string | null, href: string): boolean {
-  if (!pathname) return false;
-  // Exact match for /dashboard, prefix match for the others so future
-  // nested routes (e.g. /meters/[id]) keep their parent highlighted.
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
+// NAV_ITEMS and the active-path rule live in @/src/lib/navigation so the
+// 404 page, sitemap, and future command palettes share one registry.
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -84,7 +74,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <nav aria-label="Main" className="hidden md:block">
             <ul className="flex items-center gap-1">
               {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-                const active = isActivePath(pathname, href);
+                const active = pathname !== null && isActiveNavPath(pathname, href);
                 return (
                   <li key={href}>
                     <Link
@@ -137,7 +127,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           >
             <ul className="space-y-1 px-4 py-3">
               {NAV_ITEMS.map(({ href, label, icon: Icon }, index) => {
-                const active = isActivePath(pathname, href);
+                const active = pathname !== null && isActiveNavPath(pathname, href);
                 return (
                   <li key={href}>
                     <Link

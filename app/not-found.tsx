@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { FileQuestion, LayoutDashboard, Gauge, Receipt, Radio } from "lucide-react";
+import { FileQuestion } from "lucide-react";
+import { NAV_ITEMS } from "@/src/lib/navigation";
 
 // ============================================================================
 // Custom 404 — branded not-found page with real navigation
@@ -7,13 +8,6 @@ import { FileQuestion, LayoutDashboard, Gauge, Receipt, Radio } from "lucide-rea
 // Without this file, unknown URLs render Next's unstyled default 404. The
 // app has exactly four destinations users could have meant, so we list them
 // directly instead of dead-ending the visit.
-
-const LINKS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/meters", label: "Meters", icon: Gauge },
-  { href: "/billing", label: "Billing", icon: Receipt },
-  { href: "/streams", label: "Streams", icon: Radio },
-];
 
 export default function NotFound() {
   return (
@@ -31,7 +25,7 @@ export default function NotFound() {
         </p>
       </div>
       <nav aria-label="Main sections" className="flex flex-wrap items-center justify-center gap-3">
-        {LINKS.map(({ href, label, icon: Icon }) => (
+        {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
