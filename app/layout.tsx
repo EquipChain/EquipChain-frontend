@@ -11,6 +11,7 @@ import {
 } from "@/src/components/theme/ThemeProvider";
 import { ToastProvider } from "@/src/components/ui/toast";
 import { ServiceWorkerRegistration } from "@/src/components/pwa/ServiceWorkerRegistration";
+import { InstallPrompt } from "@/src/components/pwa/InstallPrompt";
 
 // Read the persisted theme choice server-side so the correct theme class is
 // on <html> in the very first paint — no flash of the wrong theme.
@@ -115,6 +116,7 @@ export default async function RootLayout({
         <ThemeProvider initialTheme={initialTheme}>
           <ToastProvider>
             <ServiceWorkerRegistration />
+            <InstallPrompt />
             <OfflineBanner />
             <AppShell>{children}</AppShell>
           </ToastProvider>
