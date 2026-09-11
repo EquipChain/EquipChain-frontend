@@ -27,11 +27,16 @@
   },
   "dependencies": {
     "@serwist/next": "^9.0.11",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.4.0",
     "idb": "^8.0.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "recharts": "^3.10.1",
     "serwist": "^9.0.11",
+    "swr": "^2.5.1",
+    "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

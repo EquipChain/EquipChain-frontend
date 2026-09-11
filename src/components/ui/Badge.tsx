@@ -1,4 +1,5 @@
 import { type HTMLAttributes } from "react";
+import { cn } from "@/src/lib/utils/cn";
 
 // ============================================================================
 // Badge / StatusBadge — status indication primitives
@@ -34,7 +35,11 @@ export function Badge({
 }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${badgeVariantClasses[variant]} ${className}`}
+      className={cn(
+        "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+        badgeVariantClasses[variant],
+        className
+      )}
       {...rest}
     >
       {children}

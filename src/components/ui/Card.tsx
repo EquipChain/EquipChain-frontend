@@ -1,4 +1,5 @@
 import { type HTMLAttributes, type ReactNode } from "react";
+import { cn } from "@/src/lib/utils/cn";
 
 // ============================================================================
 // Card — surface container primitive
@@ -30,9 +31,12 @@ export function Card({
 }: CardProps) {
   return (
     <div
-      className={`rounded-xl border border-border bg-surface shadow-sm ${
-        interactive ? "hover:border-brand-300 transition-colors" : ""
-      } ${paddingClasses[padding]} ${className}`}
+      className={cn(
+        "rounded-xl border border-border bg-surface shadow-sm",
+        interactive && "hover:border-brand-300 transition-colors",
+        paddingClasses[padding],
+        className
+      )}
       {...rest}
     >
       {children}
@@ -57,7 +61,10 @@ export function CardHeader({
 }: CardHeaderProps) {
   return (
     <div
-      className={`flex items-start justify-between gap-4 ${className}`}
+      className={cn(
+        "flex items-start justify-between gap-4",
+        className
+      )}
       {...rest}
     >
       <div>
@@ -77,7 +84,7 @@ export function CardContent({
   ...rest
 }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`mt-4 ${className}`} {...rest}>
+    <div className={cn("mt-4", className)} {...rest}>
       {children}
     </div>
   );

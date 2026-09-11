@@ -2,6 +2,7 @@
 
 import { forwardRef, type ButtonHTMLAttributes } from "react";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/src/lib/utils/cn";
 
 // ============================================================================
 // Button — foundational UI primitive
@@ -72,9 +73,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         type={type}
         disabled={isDisabled}
         aria-busy={loading || undefined}
-        className={`inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none ${
-          variantClasses[variant]
-        } ${sizeClasses[size]} ${fullWidth ? "w-full" : ""} ${className}`}
+        className={cn(
+          "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none",
+          variantClasses[variant],
+          sizeClasses[size],
+          fullWidth && "w-full",
+          className
+        )}
         {...rest}
       >
         {loading && (

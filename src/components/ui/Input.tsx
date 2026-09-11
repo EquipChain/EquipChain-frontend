@@ -4,6 +4,7 @@ import {
   type InputHTMLAttributes,
   type TextareaHTMLAttributes,
 } from "react";
+import { cn } from "@/src/lib/utils/cn";
 
 // ============================================================================
 // Input / Label / Field — form control primitives
@@ -26,9 +27,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     <input
       ref={ref}
       aria-invalid={error || undefined}
-      className={`w-full px-3 py-2 rounded-lg border bg-surface text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-        error ? "border-error focus:ring-error" : "border-border"
-      } ${className}`}
+      className={cn(
+        "w-full px-3 py-2 rounded-lg border bg-surface text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+        error ? "border-error focus:ring-error" : "border-border",
+        className
+      )}
       {...rest}
     />
   );
@@ -45,9 +48,11 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       <textarea
         ref={ref}
         aria-invalid={error || undefined}
-        className={`w-full px-3 py-2 rounded-lg border bg-surface text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-          error ? "border-error focus:ring-error" : "border-border"
-        } ${className}`}
+      className={cn(
+        "w-full px-3 py-2 rounded-lg border bg-surface text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+        error ? "border-error focus:ring-error" : "border-border",
+        className
+      )}
         {...rest}
       />
     );
