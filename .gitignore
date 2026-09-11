@@ -47,3 +47,7 @@ next-env.d.ts
 
 # contract specs (generated locally)
 contract-specs/
+
+# typescript incremental build cache
+tsconfig.tsbuildinfo
+*.tsbuildinfo
