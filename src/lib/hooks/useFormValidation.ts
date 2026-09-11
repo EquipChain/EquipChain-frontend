@@ -33,7 +33,7 @@ export interface UseFormValidationResult<T> {
  * @param schema zod schema describing the whole form shape
  * @param getValues current form values (called at validation time)
  */
-export function useFormValidation<T extends Record<string, unknown>>(
+export function useFormValidation<T extends object>(
   schema: ZodType<T>,
   getValues: () => T
 ): UseFormValidationResult<T> {

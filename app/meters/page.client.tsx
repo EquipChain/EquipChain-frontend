@@ -7,6 +7,7 @@ import { DataTable, type DataTableColumn } from "@/src/components/ui/DataTable";
 import { StatusBadge } from "@/src/components/ui/Badge";
 import { Tooltip } from "@/src/components/ui/Tooltip";
 import { Button } from "@/src/components/ui/Button";
+import { RegisterMeterForm } from "@/src/components/meters/RegisterMeterForm";
 import { useToast } from "@/src/components/ui/toast";
 import { Copy, MapPin } from "lucide-react";
 import { useMeters } from "@/src/lib/api/hooks";
@@ -194,14 +195,17 @@ export function MetersPageClient() {
         title="Meters"
         description="View and manage your utility meters."
         actions={
-          <ExportButton
-            title="Meters"
-            dataType="meters"
-            columns={METER_COLUMNS}
-            data={rows.map(toExportRow)}
-            label="Export"
-            variant="secondary"
-          />
+          <>
+            <RegisterMeterForm />
+            <ExportButton
+              title="Meters"
+              dataType="meters"
+              columns={METER_COLUMNS}
+              data={rows.map(toExportRow)}
+              label="Export"
+              variant="secondary"
+            />
+          </>
         }
       />
 
