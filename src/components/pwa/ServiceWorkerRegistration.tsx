@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { startSyncProcessor } from "@/src/lib/storage/syncProcessor";
 
 /**
  * Registers the Serwist service worker exactly once on mount.
@@ -13,6 +14,12 @@ import { useEffect } from "react";
  * the worker's aggressive caching makes HMR confusing.
  */
 export function ServiceWorkerRegistration() {
+  useEffect(() => {
+    // Drain the offline queue whenever connectivity returns / ops enqueue.
+    // Registered in every environment so the offline flow is testable.
+    return startSyncProcessor();
+  }, []);
+
   useEffect(() => {
     if (process.env.NODE_ENV !== "production") return;
     if (!("serviceWorker" in navigator)) return;
