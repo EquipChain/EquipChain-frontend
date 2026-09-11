@@ -86,11 +86,19 @@ export function formatDateTime(input: string | Date): string {
 
 /**
  * Relative time for recency indicators, e.g. "5 min ago", "about 2 hours ago".
- * Falls back to absolute date for anything older than 7 days.
+ * Falls back to absolute date for anything older than 7 days. Accepts ISO
+ * strings, Date objects, or epoch milliseconds (IndexedDB timestamps).
  */
-export function formatRelativeTime(input: string | Date): string {
+export function formatRelativeTime(
+  input: string | number | Date
+): string {
   try {
-    const date = typeof input === "string" ? parseISO(input) : input;
+    const date =
+      typeof input === "number"
+        ? new Date(input)
+        : typeof input === "string"
+          ? parseISO(input)
+          : input;
     if (Number.isNaN(date.getTime())) return String(input);
     if (Date.now() - date.getTime() > 7 * 24 * 60 * 60 * 1000) {
       return formatDate(date);

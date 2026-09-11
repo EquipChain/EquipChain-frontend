@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useOnlineStatus } from '@/src/lib/hooks/useOnlineStatus';
+import { SyncQueuePanel } from '@/src/components/common/SyncQueuePanel';
 
 export default function OfflinePage() {
   const { isOnline } = useOnlineStatus();
@@ -35,6 +36,11 @@ export default function OfflinePage() {
       >
         {isOnline ? 'Return to dashboard' : 'Retry'}
       </button>
+
+      {/* Queued operations: view and manage what will sync on reconnect */}
+      <div className="mt-8 w-full max-w-md text-left">
+        <SyncQueuePanel />
+      </div>
     </div>
   );
 }
