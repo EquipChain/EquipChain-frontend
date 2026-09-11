@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Gauge } from "lucide-react";
+import { Menu, X, Gauge, Search } from "lucide-react";
 import { ThemeToggle } from "@/src/components/theme/ThemeToggle";
 import { NAV_ITEMS, isActiveNavPath } from "@/src/lib/navigation";
+import { CommandPalette } from "@/src/components/common/CommandPalette";
+import { Kbd } from "@/src/components/ui/Kbd";
 
 // ============================================================================
 // AppShell — persistent top navigation for every page
@@ -95,8 +97,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </ul>
           </nav>
 
-          {/* Theme switcher — hidden on mobile for space; theme still applies */}
-          <div className="hidden md:block">
+          {/* Theme switcher + command palette trigger (desktop) */}
+          <div className="hidden items-center gap-2 md:flex">
+            <button
+              type="button"
+              onClick={() => {
+                // The palette listens for this event so the button and the
+                // Ctrl/Cmd+K keybind share one toggle code path.
+                window.dispatchEvent(new Event("equipchain:toggle-palette"));
+              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-2.5 py-1.5 text-xs text-text-muted transition-colors hover:text-text-primary"
+              aria-label="Open command palette"
+            >
+              <Search className="h-3.5 w-3.5" aria-hidden="true" />
+              Jump to…
+              <Kbd>⌘K</Kbd>
+            </button>
             <ThemeToggle />
           </div>
 
@@ -151,6 +167,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
         )}
       </header>
+
+      <CommandPalette />
 
       <main id="main-content" className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
         {children}
