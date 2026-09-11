@@ -19,6 +19,9 @@
 /.next/
 /out/
 
+# serwist service worker build artifact (compiled from app/sw.ts)
+/public/sw.js
+
 # production
 /build
 

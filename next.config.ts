@@ -10,6 +10,12 @@ detectSecretLeaks();
 const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
+  // public/sw.js is a build artifact checked into the repo only by accident:
+  // its embedded precache manifest references chunk hashes from an old build,
+  // so a stale worker would install on a fresh deploy and serve dead URLs.
+  // Excluding it from the build here keeps the source of truth in app/sw.ts;
+  // see .gitignore for the matching ignore rule.
+  disable: process.env.NODE_ENV === "development",
 });
 
 // ============================================================================
