@@ -5,12 +5,34 @@
 // ============================================================================
 
 /**
+ * Neutralizes CSV formula injection (OWASP: CSV Injection).
+ * Spreadsheet apps execute cells starting with =, +, -, @ as formulas or
+ * interpret control chars as macros; a meter name like "=HYPERLINK(...)"
+ * must never reach a spreadsheet as a live formula. Prefixing a tab or
+ * apostrophe forces text interpretation.
+ */
+function sanitizeFormulaInjections(str: string): string {
+  if (/^[=+@\-\t\r]/.test(str)) {
+    return `'${str}`;
+  }
+  // Strip control characters that some spreadsheet apps interpret as
+  // macro invocation shortcuts.
+  // eslint-disable-next-line no-control-regex
+  if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(str)) {
+    return str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+  }
+  return str;
+}
+
+/**
  * Escapes a single CSV cell value according to RFC 4180.
+ * - Neutralizes formula injections (=, +, -, @ prefixes)
  * - Wraps in double quotes if the value contains commas, quotes, or newlines
  * - Doubles up any internal double quotes
  */
 function escapeCSVCell(value: unknown): string {
-  const str = value === null || value === undefined ? "" : String(value);
+  const raw = value === null || value === undefined ? "" : String(value);
+  const str = sanitizeFormulaInjections(raw);
 
   // Check if quoting is needed
   const needsQuoting =
