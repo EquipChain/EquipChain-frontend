@@ -9,10 +9,17 @@ export const metadata = generateMetadata({
 })
 
 export default function Home() {
+  // Merge the schemas into a single @graph instead of spreading three objects
+  // into one flat blob: each schema function returns its own "@context" and
+  // "@type" key, so a spread silently overwrites them all and search engines
+  // see one mangled node instead of a valid graph.
   const jsonLd = {
-    ...webApplicationSchema(),
-    ...organizationSchema(),
-    ...breadcrumbListSchema([{ name: "Home", path: "/" }]),
+    "@context": "https://schema.org",
+    "@graph": [
+      webApplicationSchema(),
+      organizationSchema(),
+      breadcrumbListSchema([{ name: "Home", path: "/" }]),
+    ],
   }
 
   return (
