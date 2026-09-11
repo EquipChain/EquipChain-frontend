@@ -54,6 +54,19 @@ export const metadata: Metadata = {
   description:
     "Utility metering and billing dashboard for monitoring meters, managing gas buffers, and tracking usage on Stellar Soroban.",
   manifest: "/manifest.json",
+  applicationName: "EquipChain",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "EquipChain",
+  },
+  icons: {
+    icon: [
+      { url: "/icon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [{ url: "/icon-180.png", sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     title: "EquipChain Dashboard",
     description:
