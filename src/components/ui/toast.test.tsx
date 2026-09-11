@@ -34,6 +34,25 @@ describe("ToastProvider", () => {
     expect(screen.getByText("meters.csv")).toBeInTheDocument();
   });
 
+  it("runs the action callback and dismisses when the action is clicked", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn();
+    renderHarness((toast) =>
+      toast({
+        title: "Meter registered",
+        description: "meter-004 queued",
+        variant: "success",
+        action: { label: "View meters", onClick: action },
+      })
+    );
+    await user.click(screen.getByRole("button", { name: "Fire" }));
+    const actionButton = await screen.findByRole("button", { name: "View meters" });
+    await user.click(actionButton);
+    expect(action).toHaveBeenCalledTimes(1);
+    // Action dismisses the toast
+    expect(screen.queryByText("Meter registered")).not.toBeInTheDocument();
+  });
+
   it.each([
     ["success", "status"],
     ["info", "status"],

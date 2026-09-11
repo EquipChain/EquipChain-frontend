@@ -30,12 +30,18 @@ export interface ToastOptions {
   duration?: number;
   /** Renders a dismiss button and disables auto-dismiss when true */
   persistent?: boolean;
+  /** Optional action button, e.g. "Undo" or "View" */
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
-interface ToastItem extends Required<Omit<ToastOptions, "duration" | "description">> {
+interface ToastItem extends Required<Omit<ToastOptions, "duration" | "description" | "action">> {
   id: number;
   description?: string;
   duration: number;
+  action?: ToastOptions["action"];
 }
 
 interface ToastContextValue {
@@ -97,6 +103,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         variant,
         persistent: options.persistent ?? false,
         duration: options.duration ?? DEFAULT_DURATIONS[variant],
+        action: options.action,
       };
       setToasts((prev) => [...prev.slice(-4), item]); // cap at 5 visible
       return id;
@@ -170,10 +177,22 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               <span className={`absolute left-0 top-0 bottom-0 w-1 ${bar}`} aria-hidden="true" />
               <div className="flex items-start gap-3">
                 <Icon className={`h-5 w-5 shrink-0 mt-0.5 ${iconColor}`} aria-hidden="true" />
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-text-primary">{t.title}</p>
                   {t.description && (
                     <p className="text-sm text-text-secondary mt-0.5">{t.description}</p>
+                  )}
+                  {t.action && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        t.action?.onClick();
+                        dismiss(t.id);
+                      }}
+                      className="mt-2 text-xs font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
+                    >
+                      {t.action.label}
+                    </button>
                   )}
                 </div>
               </div>
