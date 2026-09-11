@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ExportButton } from "@/src/components/export/ExportButton";
 import { PageHeader } from "@/src/components/layout/PageHeader";
 import { DataTable, type DataTableColumn } from "@/src/components/ui/DataTable";
@@ -74,8 +75,31 @@ export function MetersPageClient() {
   const rows = meters ?? [];
 
   const tableColumns: DataTableColumn<Meter>[] = [
-    { key: "id", header: "Meter ID", mobileTitle: true },
-    { key: "name", header: "Name" },
+    {
+      key: "id",
+      header: "Meter ID",
+      mobileTitle: true,
+      cell: (row) => (
+        <Link
+          href={`/meters/${row.id}`}
+          className="font-mono text-xs text-brand-600 hover:underline dark:text-brand-400"
+        >
+          {row.id}
+        </Link>
+      ),
+    },
+    {
+      key: "name",
+      header: "Name",
+      cell: (row) => (
+        <Link
+          href={`/meters/${row.id}`}
+          className="text-text-primary hover:text-brand-600 hover:underline dark:hover:text-brand-400"
+        >
+          {row.name}
+        </Link>
+      ),
+    },
     { key: "type", header: "Type" },
     {
       key: "status",
