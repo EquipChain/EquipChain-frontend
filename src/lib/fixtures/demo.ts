@@ -146,3 +146,28 @@ export const sampleDashboardSummary: DashboardSummary = {
 export function meterUnit(meter: Meter): string {
   return UNIT_BY_UTILITY[meter.type];
 }
+
+/**
+ * Deterministic 30-day daily consumption series for the dashboard chart.
+ * Values follow a smooth base + sinusoidal weekly pattern so the shape is
+ * realistic without being random on every render (hydration stability).
+ */
+export function sampleConsumptionSeries(days = 30): {
+  date: string;
+  value: number;
+}[] {
+  const series: { date: string; value: number }[] = [];
+  const now = new Date("2026-03-15T00:00:00Z");
+  for (let i = days - 1; i >= 0; i--) {
+    const day = new Date(now);
+    day.setUTCDate(day.getUTCDate() - i);
+    const dayIndex = days - 1 - i;
+    // Base load + weekday ripple + slow upward drift
+    const base = 420;
+    const weekly = 60 * Math.sin((dayIndex / 7) * Math.PI * 2);
+    const drift = dayIndex * 2.5;
+    const value = Math.round(base + weekly + drift);
+    series.push({ date: day.toISOString().slice(0, 10), value });
+  }
+  return series;
+}

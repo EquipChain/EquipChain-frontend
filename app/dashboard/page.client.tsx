@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Gauge, Activity, Receipt, Coins, Zap, Droplets, Flame } from "lucide-react";
 import { ExportButton } from "@/src/components/export/ExportButton";
 import { PageHeader } from "@/src/components/layout/PageHeader";
@@ -8,11 +9,27 @@ import { Card, CardHeader, CardContent } from "@/src/components/ui/Card";
 import { Progress } from "@/src/components/ui/Progress";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { useDashboardSummary, useMeters } from "@/src/lib/api/hooks";
+import { sampleConsumptionSeries } from "@/src/lib/fixtures/demo";
 import {
   formatNumber,
   formatCurrency,
   formatCompactNumber,
 } from "@/src/lib/utils/format";
+
+// The chart library is heavy (~100KB gz); loading it dynamically keeps it
+// out of the initial bundle and gives the card a matching skeleton while
+// the chunk streams in.
+const ConsumptionChart = dynamic(
+  () => import("@/src/components/charts/ConsumptionChart").then(
+    (mod) => mod.ConsumptionChart
+  ),
+  {
+    loading: () => (
+      <div className="h-64 animate-pulse rounded-lg bg-surface-tertiary" aria-hidden="true" />
+    ),
+    ssr: false,
+  }
+);
 
 // ============================================================================
 // Dashboard — typed overview with aggregates and gas buffer health
@@ -153,6 +170,21 @@ export function DashboardPageClient() {
           icon={<Coins className="h-4 w-4" aria-hidden="true" />}
         />
       </div>
+
+      {/* Usage trend — dynamically imported recharts chunk */}
+      <Card>
+        <CardHeader
+          title="Consumption trend"
+          description="Daily usage across all meters, last 30 days"
+        />
+        <CardContent>
+          <ConsumptionChart
+            data={sampleConsumptionSeries(30)}
+            unit="kWh"
+            ariaLabel="Daily consumption across all meters for the last 30 days"
+          />
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Gas buffer health */}
