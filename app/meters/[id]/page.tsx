@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { generateMetadata as makeMetadata } from "@/src/lib/seo/metadata";
 import { PageHeader } from "@/src/components/layout/PageHeader";
+import { Breadcrumbs } from "@/src/components/ui/Breadcrumbs";
 import { Card, CardHeader, CardContent } from "@/src/components/ui/Card";
 import { StatusBadge } from "@/src/components/ui/Badge";
 import { Progress } from "@/src/components/ui/Progress";
@@ -60,6 +61,14 @@ export default async function MeterDetailPage({ params }: MeterDetailProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="flex flex-col gap-8">
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Meters", href: "/meters" },
+            { label: meter.name },
+          ]}
+        />
+
         <Link href="/meters">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
