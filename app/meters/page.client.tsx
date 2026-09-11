@@ -8,6 +8,7 @@ import { StatusBadge } from "@/src/components/ui/Badge";
 import { Tooltip } from "@/src/components/ui/Tooltip";
 import { Button } from "@/src/components/ui/Button";
 import { RegisterMeterForm } from "@/src/components/meters/RegisterMeterForm";
+import { SubmitReadingForm } from "@/src/components/meters/SubmitReadingForm";
 import { useToast } from "@/src/components/ui/toast";
 import { Copy, MapPin } from "lucide-react";
 import { useMeters } from "@/src/lib/api/hooks";
@@ -196,6 +197,7 @@ export function MetersPageClient() {
         description="View and manage your utility meters."
         actions={
           <>
+            <SubmitReadingForm />
             <RegisterMeterForm />
             <ExportButton
               title="Meters"
