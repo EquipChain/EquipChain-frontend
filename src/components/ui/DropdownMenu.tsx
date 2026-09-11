@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  createContext,
-  useContext,
   useEffect,
   useId,
   useRef,
@@ -38,12 +36,6 @@ export interface DropdownMenuProps {
   /** Horizontal alignment of the popover */
   align?: "left" | "right";
 }
-
-interface MenuContextValue {
-  close: () => void;
-}
-
-const MenuContext = createContext<MenuContextValue | null>(null);
 
 export function DropdownMenu({
   triggerLabel,
@@ -105,59 +97,57 @@ export function DropdownMenu({
   };
 
   return (
-    <MenuContext.Provider value={{ close }}>
-      <div
-        ref={containerRef}
-        className="relative inline-block"
-        onKeyDown={handleMenuKeyDown}
+    <div
+      ref={containerRef}
+      className="relative inline-block"
+      onKeyDown={handleMenuKeyDown}
+    >
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
+        aria-label={triggerLabel}
+        onClick={() => setOpen((o) => !o)}
+        onKeyDown={handleTriggerKeyDown}
+        className="inline-flex items-center justify-center rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-secondary hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
       >
-        <button
-          type="button"
-          aria-haspopup="menu"
-          aria-expanded={open}
-          aria-controls={open ? menuId : undefined}
-          aria-label={triggerLabel}
-          onClick={() => setOpen((o) => !o)}
-          onKeyDown={handleTriggerKeyDown}
-          className="inline-flex items-center justify-center rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-secondary hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
-        >
-          {triggerIcon ?? "⋯"}
-        </button>
+        {triggerIcon ?? "⋯"}
+      </button>
 
-        {open && (
-          <div
-            id={menuId}
-            role="menu"
-            aria-label={triggerLabel}
-            className={cn(
-              "absolute z-50 mt-1 min-w-40 overflow-hidden rounded-lg border border-border bg-surface py-1 shadow-lg",
-              align === "right" ? "right-0" : "left-0"
-            )}
-          >
-            {items.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                role="menuitem"
-                disabled={item.disabled}
-                onClick={() => {
-                  item.onSelect?.();
-                  close();
-                }}
-                className={cn(
-                  "flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-surface-secondary disabled:cursor-not-allowed disabled:opacity-40",
-                  item.destructive
-                    ? "text-error hover:bg-error-light/30"
-                    : "text-text-secondary hover:text-text-primary"
-                )}
-              >
-                {item.icon}
-                {item.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </MenuContext.Provider>
+      {open && (
+        <div
+          id={menuId}
+          role="menu"
+          aria-label={triggerLabel}
+          className={cn(
+            "absolute z-50 mt-1 min-w-40 overflow-hidden rounded-lg border border-border bg-surface py-1 shadow-lg",
+            align === "right" ? "right-0" : "left-0"
+          )}
+        >
+          {items.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              role="menuitem"
+              disabled={item.disabled}
+              onClick={() => {
+                item.onSelect?.();
+                close();
+              }}
+              className={cn(
+                "flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-surface-secondary disabled:cursor-not-allowed disabled:opacity-40",
+                item.destructive
+                  ? "text-error hover:bg-error-light/30"
+                  : "text-text-secondary hover:text-text-primary"
+              )}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
