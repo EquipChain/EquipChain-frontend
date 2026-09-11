@@ -36,12 +36,15 @@ export function OfflineBanner() {
 
   useEffect(() => {
     if (isOnline && wasOffline) {
-      const timer = setTimeout(() => {
-        setShowReconnected(true);
-        const hideTimer = setTimeout(() => setShowReconnected(false), 3000);
-        return () => clearTimeout(hideTimer);
-      }, 0);
-      return () => clearTimeout(timer);
+      // The previous nested-timeout version returned its cleanup from the
+      // setTimeout callback, where React ignores it: the 3s hide timer was
+      // never cancelled on unmount and could setState after teardown.
+      const showTimer = setTimeout(() => setShowReconnected(true), 0);
+      const hideTimer = setTimeout(() => setShowReconnected(false), 3000);
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(hideTimer);
+      };
     }
   }, [isOnline, wasOffline]);
 
