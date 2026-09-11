@@ -2,47 +2,35 @@
 
 import { Moon, Sun, Monitor } from "lucide-react";
 import { useTheme, type Theme } from "./ThemeProvider";
+import { SegmentedControl } from "@/src/components/ui/SegmentedControl";
 
 // ============================================================================
 // ThemeToggle — segmented light/dark/system switch for the header
 // ============================================================================
+// Previously hand-rolled its own radiogroup markup; now a thin wrapper
+// over the shared SegmentedControl primitive (same a11y semantics, less
+// bespoke code).
 
-const OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
-  { value: "light", label: "Light theme", icon: Sun },
-  { value: "dark", label: "Dark theme", icon: Moon },
-  { value: "system", label: "Match system theme", icon: Monitor },
+const OPTIONS: {
+  value: Theme;
+  label: string;
+  icon: React.ReactNode;
+}[] = [
+  { value: "light", label: "Light theme", icon: <Sun className="h-4 w-4" aria-hidden="true" /> },
+  { value: "dark", label: "Dark theme", icon: <Moon className="h-4 w-4" aria-hidden="true" /> },
+  { value: "system", label: "Match system theme", icon: <Monitor className="h-4 w-4" aria-hidden="true" /> },
 ];
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div
-      role="radiogroup"
-      aria-label="Color theme"
-      className="flex items-center rounded-lg border border-border bg-surface-secondary p-0.5"
-    >
-      {OPTIONS.map(({ value, label, icon: Icon }) => {
-        const active = theme === value;
-        return (
-          <button
-            key={value}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            aria-label={label}
-            title={label}
-            onClick={() => setTheme(value)}
-            className={`rounded-md p-1.5 transition-colors ${
-              active
-                ? "bg-surface text-text-primary shadow-sm"
-                : "text-text-muted hover:text-text-primary"
-            }`}
-          >
-            <Icon className="h-4 w-4" aria-hidden="true" />
-          </button>
-        );
-      })}
-    </div>
+    <SegmentedControl
+      ariaLabel="Color theme"
+      options={OPTIONS}
+      value={theme}
+      onChange={setTheme}
+      iconOnly
+    />
   );
 }
