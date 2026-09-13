@@ -4,6 +4,10 @@ import dynamic from "next/dynamic";
 import { Gauge, Activity, Receipt, Coins, Zap, Droplets, Flame } from "lucide-react";
 import { ExportButton } from "@/src/components/export/ExportButton";
 import { PageHeader } from "@/src/components/layout/PageHeader";
+import {
+  DashboardAlerts,
+  GasBufferCriticalNote,
+} from "@/src/components/dashboard/DashboardAlerts";
 import { StatCard } from "@/src/components/ui/StatCard";
 import { Card, CardHeader, CardContent } from "@/src/components/ui/Card";
 import { Progress } from "@/src/components/ui/Progress";
@@ -131,6 +135,10 @@ export function DashboardPageClient() {
         }
       />
 
+      {/* Action-required notices live above the fold so overdue bills and
+          a failing gas reserve are impossible to miss. */}
+      <DashboardAlerts />
+
       {/* Summary cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
@@ -204,6 +212,10 @@ export function DashboardPageClient() {
               {formatNumber(summary.gasBuffer, 1)} XLM held against a{" "}
               {GAS_BUFFER_TARGET_XLM} XLM operational target.
             </p>
+            <GasBufferCriticalNote
+              balance={summary.gasBuffer}
+              floorXlm={GAS_BUFFER_TARGET_XLM * 0.35}
+            />
           </CardContent>
         </Card>
 
