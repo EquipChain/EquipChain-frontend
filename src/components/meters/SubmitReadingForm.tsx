@@ -9,6 +9,7 @@ import { useToast } from "@/src/components/ui/toast";
 import { useFormValidation } from "@/src/lib/hooks/useFormValidation";
 import { meterReadingSchema } from "@/src/lib/validation/schemas";
 import { useMeters } from "@/src/lib/api/hooks";
+import { MeterSearchablePicker } from "./MeterSearchablePicker";
 
 // ============================================================================
 // SubmitReadingForm — validated manual reading entry
@@ -108,31 +109,27 @@ export function SubmitReadingForm({ defaultMeterId }: { defaultMeterId?: string 
         description="Manual readings sync like device readings — validated before queueing."
       >
         <form onSubmit={(e) => void handleSubmit(e)} noValidate className="space-y-4">
-          <Field
-            label="Meter"
-            required
-            error={errors.meterId}
-            inputProps={{
-              id: "readingMeterId",
-              name: "meterId",
-              list: "meter-id-options",
-              value: values.meterId,
-              onChange: setField("meterId"),
-              onBlur: () => validateField("meterId"),
-              placeholder: "meter-001",
-              autoComplete: "off",
+          {/* Combobox instead of a datalist: datalists render inconsistently
+              across browsers, match only on prefix, and accept arbitrary
+              typed values that then failed at sync time. */}
+          <MeterSearchablePicker
+            value={values.meterId}
+            onChange={(meterId) => {
+              setValues((prev) => ({ ...prev, meterId }));
+              if (submitAttempted || errors.meterId) clearFieldError("meterId");
             }}
-          >
-            {/* Datalist lives inside the field wrapper; Field renders
-                children after the input when provided. */}
-          </Field>
-          <datalist id="meter-id-options">
-            {(meters ?? []).map((meter) => (
-              <option key={meter.id} value={meter.id}>
-                {meter.name}
-              </option>
-            ))}
-          </datalist>
+            options={(meters ?? []).map((meter) => ({
+              id: meter.id,
+              name: meter.name,
+              meta: meter.type,
+            }))}
+            error={errors.meterId}
+            required
+            onBlur={() => validateField("meterId")}
+            placeholder="Search by name or ID…"
+            id="readingMeterId"
+            name="meterId"
+          />
 
           <Field
             label="Reading"
