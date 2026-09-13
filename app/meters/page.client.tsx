@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useSWRConfig } from "swr";
+import { CloudOff, RefreshCw } from "lucide-react";
 import { ExportButton } from "@/src/components/export/ExportButton";
 import { PageHeader } from "@/src/components/layout/PageHeader";
 import { DataTable, type DataTableColumn } from "@/src/components/ui/DataTable";
@@ -9,6 +11,7 @@ import { Tooltip } from "@/src/components/ui/Tooltip";
 import { Button } from "@/src/components/ui/Button";
 import { RegisterMeterForm } from "@/src/components/meters/RegisterMeterForm";
 import { SubmitReadingForm } from "@/src/components/meters/SubmitReadingForm";
+import { EmptyState } from "@/src/components/ui/EmptyState";
 import { useToast } from "@/src/components/ui/toast";
 import { Copy, MapPin } from "lucide-react";
 import { useMeters } from "@/src/lib/api/hooks";
@@ -71,7 +74,8 @@ function toExportRow(meter: Meter): MeterExportRow {
 }
 
 export function MetersPageClient() {
-  const { data: meters, isLoading, error } = useMeters();
+  const { data: meters, isLoading, error, mutate } = useMeters();
+  const { mutate: globalMutate } = useSWRConfig();
   const { toast } = useToast();
 
   const rows = meters ?? [];
@@ -185,6 +189,28 @@ export function MetersPageClient() {
         <PageHeader
           title="Meters"
           description="Unable to load meters. Check your connection and try again."
+        />
+        {/* Retry re-runs the failed fetch through the same cache key without
+            a full page reload; globalMutate covers any dependent hooks. */}
+        <EmptyState
+          bare
+          icon={<CloudOff className="h-6 w-6 text-text-muted" />}
+          title="Couldn't load meters"
+          description="This was a fetch failure, not an empty dataset. Retrying is safe."
+          action={
+            <Button
+              variant="outline"
+              onClick={() => {
+                void mutate();
+                void globalMutate(
+                  (key) => typeof key === "string" && key.startsWith("meters")
+                );
+              }}
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              Retry
+            </Button>
+          }
         />
       </div>
     );

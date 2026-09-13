@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FileText, Receipt } from "lucide-react";
+import { useSWRConfig } from "swr";
+import { CloudOff, FileText, Receipt, RefreshCw } from "lucide-react";
 import { ExportButton } from "@/src/components/export/ExportButton";
 import { PageHeader } from "@/src/components/layout/PageHeader";
 import { DataTable, type DataTableColumn } from "@/src/components/ui/DataTable";
@@ -10,6 +11,7 @@ import { Button } from "@/src/components/ui/Button";
 import { Card } from "@/src/components/ui/Card";
 import { InvoiceTemplate } from "@/src/components/export/InvoiceTemplate";
 import type { InvoiceData } from "@/src/components/export/InvoiceTemplate";
+import { EmptyState } from "@/src/components/ui/EmptyState";
 import { useInvoices } from "@/src/lib/api/hooks";
 import {
   formatCurrency,
@@ -93,7 +95,8 @@ function toInvoiceData(invoice: Invoice): InvoiceData {
 }
 
 export function BillingPageClient() {
-  const { data: invoices, isLoading, error } = useInvoices();
+  const { data: invoices, isLoading, error, mutate } = useInvoices();
+  const { mutate: globalMutate } = useSWRConfig();
   const [previewId, setPreviewId] = useState<string | null>(null);
 
   // Stable identity for the SWR data fallback so the totals useMemo does
@@ -171,6 +174,28 @@ export function BillingPageClient() {
         <PageHeader
           title="Billing"
           description="Unable to load invoices. Check your connection and try again."
+        />
+        {/* Retry re-runs the failed fetch through the same cache key without
+            a full page reload; globalMutate covers any dependent hooks. */}
+        <EmptyState
+          bare
+          icon={<CloudOff className="h-6 w-6 text-text-muted" />}
+          title="Couldn't load billing data"
+          description="This was a fetch failure, not an empty dataset. Retrying is safe."
+          action={
+            <Button
+              variant="outline"
+              onClick={() => {
+                void mutate();
+                void globalMutate(
+                  (key) => typeof key === "string" && key.startsWith("invoices")
+                );
+              }}
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              Retry
+            </Button>
+          }
         />
       </div>
     );

@@ -1,10 +1,14 @@
 "use client";
 
+import { useSWRConfig } from "swr";
+import { CloudOff, RefreshCw } from "lucide-react";
 import { ExportButton } from "@/src/components/export/ExportButton";
 import { PageHeader } from "@/src/components/layout/PageHeader";
 import { DataTable, type DataTableColumn } from "@/src/components/ui/DataTable";
 import { StatusBadge } from "@/src/components/ui/Badge";
 import { Tooltip } from "@/src/components/ui/Tooltip";
+import { Button } from "@/src/components/ui/Button";
+import { EmptyState } from "@/src/components/ui/EmptyState";
 import { useStreams } from "@/src/lib/api/hooks";
 import { formatRelativeTime, formatDateTime } from "@/src/lib/utils/format";
 import type { DataStream } from "@/src/lib/types/domain";
@@ -72,7 +76,8 @@ function LiveIndicator({ live }: { live: boolean }) {
 }
 
 export function StreamsPageClient() {
-  const { data: streams, isLoading, error } = useStreams();
+  const { data: streams, isLoading, error, mutate } = useStreams();
+  const { mutate: globalMutate } = useSWRConfig();
 
   const rows = streams ?? [];
 
@@ -136,6 +141,28 @@ export function StreamsPageClient() {
         <PageHeader
           title="Streams"
           description="Unable to load streams. Check your connection and try again."
+        />
+        {/* Retry re-runs the failed fetch through the same cache key without
+            a full page reload; globalMutate covers any dependent hooks. */}
+        <EmptyState
+          bare
+          icon={<CloudOff className="h-6 w-6 text-text-muted" />}
+          title="Couldn't load streams"
+          description="This was a fetch failure, not an empty dataset. Retrying is safe."
+          action={
+            <Button
+              variant="outline"
+              onClick={() => {
+                void mutate();
+                void globalMutate(
+                  (key) => typeof key === "string" && key.startsWith("streams")
+                );
+              }}
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              Retry
+            </Button>
+          }
         />
       </div>
     );
