@@ -10,6 +10,7 @@ import { StatusBadge } from "@/src/components/ui/Badge";
 import { Progress } from "@/src/components/ui/Progress";
 import { Button } from "@/src/components/ui/Button";
 import { sampleMeters, sampleReadingHistory, meterUnit } from "@/src/lib/fixtures/demo";
+import { MeterDetailActions } from "@/src/components/meters/MeterDetailActions";
 import { MeterCharts } from "./MeterCharts";
 import {
   formatConsumption,
@@ -81,7 +82,12 @@ export default async function MeterDetailPage({ params }: MeterDetailProps) {
         <PageHeader
           title={meter.name}
           description={`${meter.type} meter · ${meter.id}`}
-          actions={<StatusBadge status={meter.status} />}
+          actions={
+            <>
+              <StatusBadge status={meter.status} />
+              <MeterDetailActions meterId={meter.id} />
+            </>
+          }
         />
 
         <Card>

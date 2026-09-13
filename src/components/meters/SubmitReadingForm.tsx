@@ -25,7 +25,14 @@ interface FormValues {
 
 const EMPTY_FORM: FormValues = { meterId: "", reading: "" };
 
-export function SubmitReadingForm({ defaultMeterId }: { defaultMeterId?: string }) {
+export function SubmitReadingForm({
+  defaultMeterId,
+  label = "Submit reading",
+}: {
+  defaultMeterId?: string;
+  /** Trigger button text; overridable for in-context placements */
+  label?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<FormValues>({
     ...EMPTY_FORM,
@@ -99,7 +106,7 @@ export function SubmitReadingForm({ defaultMeterId }: { defaultMeterId?: string 
     <>
       <Button variant="outline" onClick={() => setOpen(true)}>
         <Upload className="h-4 w-4" aria-hidden="true" />
-        Submit reading
+        {label}
       </Button>
 
       <Modal
