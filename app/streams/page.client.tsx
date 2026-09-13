@@ -1,6 +1,7 @@
 "use client";
 
 import { useSWRConfig } from "swr";
+import { useMemo, useState } from "react";
 import { CloudOff, RefreshCw } from "lucide-react";
 import { ExportButton } from "@/src/components/export/ExportButton";
 import { PageHeader } from "@/src/components/layout/PageHeader";
@@ -9,8 +10,9 @@ import { StatusBadge } from "@/src/components/ui/Badge";
 import { Tooltip } from "@/src/components/ui/Tooltip";
 import { Button } from "@/src/components/ui/Button";
 import { EmptyState } from "@/src/components/ui/EmptyState";
+import { LiveRelativeTime } from "@/src/components/common/LiveRelativeTime";
 import { useStreams } from "@/src/lib/api/hooks";
-import { formatRelativeTime, formatDateTime } from "@/src/lib/utils/format";
+import { formatRelativeTime } from "@/src/lib/utils/format";
 import type { DataStream } from "@/src/lib/types/domain";
 
 // ============================================================================
@@ -78,8 +80,30 @@ function LiveIndicator({ live }: { live: boolean }) {
 export function StreamsPageClient() {
   const { data: streams, isLoading, error, mutate } = useStreams();
   const { mutate: globalMutate } = useSWRConfig();
+  const [statusFilter, setStatusFilter] = useState<"all" | DataStream["status"]>("all");
 
-  const rows = streams ?? [];
+  // Stable identity so the filter useMemo does not recompute on unrelated
+  // renders when SWR has not refetched.
+  const allStreams = useMemo(() => streams ?? [], [streams]);
+  // Status filter narrows the table client-side; the caption still reports
+  // the total so a filtered view never hides fleet-wide liveness.
+  const rows = useMemo(
+    () =>
+      statusFilter === "all"
+        ? allStreams
+        : allStreams.filter((stream) => stream.status === statusFilter),
+    [allStreams, statusFilter]
+  );
+
+  const liveCount = allStreams.filter((s) => s.status === "Streaming").length;
+
+  const filterButtons: { value: "all" | DataStream["status"]; label: string; count: number }[] = [
+    { value: "all", label: "All", count: allStreams.length },
+    { value: "Streaming", label: "Streaming", count: allStreams.filter((s) => s.status === "Streaming").length },
+    { value: "Paused", label: "Paused", count: allStreams.filter((s) => s.status === "Paused").length },
+    { value: "Failed", label: "Failed", count: allStreams.filter((s) => s.status === "Failed").length },
+    { value: "Offline", label: "Offline", count: allStreams.filter((s) => s.status === "Offline").length },
+  ];
 
   const tableColumns: DataTableColumn<DataStream>[] = [
     {
@@ -111,11 +135,7 @@ export function StreamsPageClient() {
       key: "lastDataAt",
       header: "Last Data Point",
       sortValue: (row) => row.lastDataAt,
-      cell: (row) => (
-        <time dateTime={row.lastDataAt} title={formatDateTime(row.lastDataAt)}>
-          {formatRelativeTime(row.lastDataAt)}
-        </time>
-      ),
+      cell: (row) => <LiveRelativeTime datetime={row.lastDataAt} />,
     },
     {
       key: "uptime",
@@ -194,8 +214,27 @@ export function StreamsPageClient() {
         emptyMessage="No data streams configured"
         emptyDescription="Streams are created when a meter starts publishing readings."
         searchPlaceholder="Search streams…"
-        caption={`${rows.length} streams · ${rows.filter((s) => s.status === "Streaming").length} live`}
+        caption={`${rows.length} of ${allStreams.length} streams · ${liveCount} live`}
         ariaLabel="Data streams"
+        toolbar={
+          <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by status">
+            {filterButtons.map(({ value, label, count }) => {
+              const active = statusFilter === value;
+              return (
+                <Button
+                  key={value}
+                  variant={active ? "primary" : "ghost"}
+                  size="sm"
+                  aria-pressed={active}
+                  onClick={() => setStatusFilter(value)}
+                >
+                  {label}
+                  <span className="ml-1 text-xs opacity-70">{count}</span>
+                </Button>
+              );
+            })}
+          </div>
+        }
       />
     </div>
   );
