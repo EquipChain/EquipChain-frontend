@@ -43,6 +43,18 @@ const MeterReadingHistoryChart = dynamic(
   }
 );
 
+const MeterUsageChart = dynamic(
+  () => import("@/src/components/charts/MeterUsageChart").then(
+    (mod) => mod.MeterUsageChart
+  ),
+  {
+    loading: () => (
+      <div className="h-60 animate-pulse rounded-lg bg-surface-tertiary" aria-hidden="true" />
+    ),
+    ssr: false,
+  }
+);
+
 interface MeterDetailProps {
   params: Promise<{ id: string }>;
 }
@@ -65,6 +77,7 @@ export default async function MeterDetailPage({ params }: MeterDetailProps) {
   if (!meter) notFound();
 
   const unit = meterUnit(meter);
+  const history = sampleReadingHistory(meter, 30);
   const jsonLd = breadcrumbListSchema([
     { name: "Home", path: "/" },
     { name: "Meters", path: "/meters" },
@@ -109,9 +122,25 @@ export default async function MeterDetailPage({ params }: MeterDetailProps) {
                 the rest of the profile survives a rendering failure. */}
             <ErrorBoundary sectionName="reading history chart">
               <MeterReadingHistoryChart
-                data={sampleReadingHistory(meter, 30)}
+                data={history}
                 unit={unit}
                 ariaLabel={`Cumulative readings for ${meter.name} over the last 30 days`}
+              />
+            </ErrorBoundary>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader
+            title="Usage by period"
+            description="Consumption per day, week, or month"
+          />
+          <CardContent>
+            <ErrorBoundary sectionName="usage chart">
+              <MeterUsageChart
+                data={history}
+                unit={unit}
+                ariaLabel={`Consumption by period for ${meter.name}`}
               />
             </ErrorBoundary>
           </CardContent>
