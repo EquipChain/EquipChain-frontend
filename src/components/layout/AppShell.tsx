@@ -7,6 +7,7 @@ import { Menu, X, Gauge, Search } from "lucide-react";
 import { ThemeToggle } from "@/src/components/theme/ThemeToggle";
 import { NAV_ITEMS, isActiveNavPath } from "@/src/lib/navigation";
 import { CommandPalette } from "@/src/components/common/CommandPalette";
+import { KeyboardShortcutsDialog } from "@/src/components/common/KeyboardShortcutsDialog";
 import { Kbd } from "@/src/components/ui/Kbd";
 
 // ============================================================================
@@ -169,6 +170,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <CommandPalette />
+      <KeyboardShortcutsDialog />
 
       <main id="main-content" className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
         {children}
