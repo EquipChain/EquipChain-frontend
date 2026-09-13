@@ -13,6 +13,7 @@ import { generateJSON, downloadJSON } from "@/src/lib/export/json";
 import type { JSONExportMetadata } from "@/src/lib/export/json";
 import { useToast } from "@/src/components/ui/toast";
 import { sanitizeString } from "@/src/lib/validation/sanitize";
+import { formatBytes } from "@/src/lib/utils/format";
 
 // ============================================================================
 // Types
@@ -74,6 +75,13 @@ const FORMAT_LABELS: Record<ExportFormat, string> = {
   json: "JSON (.json) — Best for API integration",
   pdf: "PDF (.pdf) — Best for printing & sharing",
 };
+
+/** Above this many rows, exports may take seconds and PDF print windows
+ *  can choke; surface a heads-up instead of a frozen tab. */
+const LARGE_EXPORT_ROW_THRESHOLD = 10_000;
+
+/** Rough per-row payload estimate used for the size hint. */
+const ESTIMATED_BYTES_PER_ROW = 120;
 
 // ============================================================================
 // Component
@@ -284,6 +292,19 @@ export function ExportDialog({
       }
     >
       <div className="space-y-6">
+        {/* Size guidance for heavy exports so a multi-second freeze or a
+            choked print window never comes as a surprise. */}
+        {data.length > LARGE_EXPORT_ROW_THRESHOLD && (
+          <div
+            role="status"
+            className="rounded-lg border border-warning/30 bg-warning-light/40 px-3 py-2 text-xs text-warning-dark dark:bg-yellow-900/20 dark:text-yellow-400"
+          >
+            Large export: {data.length.toLocaleString()} rows (about{" "}
+            {formatBytes(data.length * ESTIMATED_BYTES_PER_ROW)}). This may
+            take a few seconds{config.format === "pdf" ? "; PDF printing is the slowest path — prefer CSV." : "."}
+          </div>
+        )}
+
         {/* Delivery — file download or clipboard copy */}
         <fieldset>
           <legend className="mb-2 text-sm font-medium text-text-secondary">
