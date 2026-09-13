@@ -142,3 +142,87 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* ============================================================================
+   Print stylesheet — Ctrl/Cmd+P produces a usable document, not a mess
+   ============================================================================
+   Printing previously reproduced the app chrome: sticky headers, drawers,
+   toasts, shortcut buttons, pagination controls, and a dark background if
+   the user had dark mode on (draining toner). This layer strips interactive
+   chrome, forces light ink-friendly colors, expands truncated data, and
+   keeps table rows from splitting across page breaks. */
+@media print {
+  /* Light, ink-friendly output regardless of active theme. */
+  :root {
+    --color-surface: #ffffff !important;
+    --color-surface-secondary: #f8fafc !important;
+    --color-surface-tertiary: #f1f5f9 !important;
+    --color-border: #cbd5e1 !important;
+    --color-border-light: #e2e8f0 !important;
+    --color-text-primary: #0f172a !important;
+    --color-text-secondary: #334155 !important;
+    --color-text-muted: #475569 !important;
+    --color-background: #ffffff !important;
+    --color-foreground: #0f172a !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  /* Interactive chrome is meaningless on paper. */
+  header,
+  footer,
+  nav,
+  button,
+  [role="dialog"]:not([data-print="keep"]) {
+    display: none !important;
+  }
+
+  /* Fixed overlays (toasts, banners, palette, shortcut button) never print. */
+  .fixed {
+    display: none !important;
+  }
+
+  /* Content flows full-width; app max-widths and padding waste paper. */
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Shadows and rounded chrome do not survive paper; drop them. */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Keep rows intact across page breaks and repeat headers on each page. */
+  tr,
+  img,
+  .print-avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  /* Links read as text; print their destination where it matters. */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #475569;
+    word-break: break-all;
+  }
+
+  /* Relative labels like "5 min ago" are meaningless on paper — show the
+     absolute datetime carried in the title attribute instead. */
+  time[title]::after {
+    content: " (" attr(title) ")";
+    font-size: 0.85em;
+    color: #475569;
+  }
+}

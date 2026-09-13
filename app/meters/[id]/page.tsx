@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { generateMetadata as makeMetadata } from "@/src/lib/seo/metadata";
@@ -11,7 +10,7 @@ import { StatusBadge } from "@/src/components/ui/Badge";
 import { Progress } from "@/src/components/ui/Progress";
 import { Button } from "@/src/components/ui/Button";
 import { sampleMeters, sampleReadingHistory, meterUnit } from "@/src/lib/fixtures/demo";
-import { ErrorBoundary } from "@/src/components/common/ErrorBoundary";
+import { MeterCharts } from "./MeterCharts";
 import {
   formatConsumption,
   formatCurrency,
@@ -27,33 +26,6 @@ import { breadcrumbListSchema } from "@/src/lib/seo/json-ld";
 // meter's readings, rate, or owner. This route renders the full profile.
 // It is a server component over the fixture list today; when the backend
 // lands, only the data source changes (params.id -> fetch).
-
-// Recharts is heavy (~100KB gz): the history chart loads in its own chunk
-// so the detail page's static content paints first, with a matching
-// skeleton in the meantime.
-const MeterReadingHistoryChart = dynamic(
-  () => import("@/src/components/charts/MeterReadingHistoryChart").then(
-    (mod) => mod.MeterReadingHistoryChart
-  ),
-  {
-    loading: () => (
-      <div className="h-60 animate-pulse rounded-lg bg-surface-tertiary" aria-hidden="true" />
-    ),
-    ssr: false,
-  }
-);
-
-const MeterUsageChart = dynamic(
-  () => import("@/src/components/charts/MeterUsageChart").then(
-    (mod) => mod.MeterUsageChart
-  ),
-  {
-    loading: () => (
-      <div className="h-60 animate-pulse rounded-lg bg-surface-tertiary" aria-hidden="true" />
-    ),
-    ssr: false,
-  }
-);
 
 interface MeterDetailProps {
   params: Promise<{ id: string }>;
@@ -118,31 +90,7 @@ export default async function MeterDetailPage({ params }: MeterDetailProps) {
             description="Cumulative readings over the last 30 days"
           />
           <CardContent>
-            {/* Chart-libs can throw on odd data; contain the blast radius so
-                the rest of the profile survives a rendering failure. */}
-            <ErrorBoundary sectionName="reading history chart">
-              <MeterReadingHistoryChart
-                data={history}
-                unit={unit}
-                ariaLabel={`Cumulative readings for ${meter.name} over the last 30 days`}
-              />
-            </ErrorBoundary>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader
-            title="Usage by period"
-            description="Consumption per day, week, or month"
-          />
-          <CardContent>
-            <ErrorBoundary sectionName="usage chart">
-              <MeterUsageChart
-                data={history}
-                unit={unit}
-                ariaLabel={`Consumption by period for ${meter.name}`}
-              />
-            </ErrorBoundary>
+            <MeterCharts history={history} unit={unit} meterName={meter.name} />
           </CardContent>
         </Card>
 
