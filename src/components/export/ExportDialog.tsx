@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Download } from "lucide-react";
+import { Download, ClipboardCopy } from "lucide-react";
+import { useEffect } from "react";
 import { Modal } from "@/src/components/ui/Modal";
+import { SegmentedControl } from "@/src/components/ui/SegmentedControl";
 import { Button } from "@/src/components/ui/Button";
 import { Field, Label } from "@/src/components/ui/Input";
 import { generateCSV, downloadCSV } from "@/src/lib/export/csv";
@@ -96,6 +98,9 @@ export function ExportDialog({
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [exportError, setExportError] = useState<string | null>(null);
+  // "download" saves a file; "clipboard" copies the identical payload for
+  // pasting into spreadsheets, chat, or tickets without a temp file.
+  const [deliverAs, setDeliverAs] = useState<"download" | "clipboard">("download");
   const { toast } = useToast();
 
   const handleColumnToggle = useCallback((key: string) => {
@@ -106,6 +111,13 @@ export function ExportDialog({
         : [...prev.columns, key],
     }));
   }, []);
+
+  // Reopening the dialog should always start from the default delivery
+  // mode; without this a clipboard export would silently persist as the
+  // choice for every later export in the session.
+  useEffect(() => {
+    if (isOpen) setDeliverAs("download");
+  }, [isOpen]);
 
   const handleExport = useCallback(async () => {
     if (config.columns.length === 0) {
@@ -130,6 +142,48 @@ export function ExportDialog({
 
       const timestamp = new Date().toISOString().split("T")[0];
       const baseFilename = `equipchain-${config.dataType}-${timestamp}`;
+
+      // Clipboard mode writes the same payload the file would contain, so
+      // users can paste straight into a spreadsheet, chat, or ticket.
+      if (deliverAs === "clipboard") {
+        let payload: string;
+        switch (config.format) {
+          case "csv": {
+            const csvColumns: CSVColumn[] = columns
+              .filter((c) => config.columns.includes(c.key))
+              .map((c) => ({ header: c.label, accessor: c.key }));
+            payload = generateCSV(filteredData, { columns: csvColumns, includeBOM: false });
+            break;
+          }
+          case "json": {
+            payload = JSON.stringify(
+              generateJSON(
+                filteredData,
+                config.dataType,
+                config.dateRange
+                  ? {
+                      start: new Date(config.dateRange.start),
+                      end: new Date(config.dateRange.end),
+                    }
+                  : undefined
+              ),
+              null,
+              2
+            );
+            break;
+          }
+          case "pdf":
+            throw new Error("Clipboard export is not available for PDF. Choose CSV or JSON.");
+        }
+        await navigator.clipboard.writeText(payload);
+        toast({
+          title: "Copied to clipboard",
+          description: `${filteredData.length} record${filteredData.length === 1 ? "" : "s"} ready to paste.`,
+          variant: "success",
+        });
+        onClose();
+        return;
+      }
 
       switch (config.format) {
         case "csv": {
@@ -171,8 +225,17 @@ export function ExportDialog({
       });
       onClose();
     } catch (err) {
-      const message =
+      let message =
         err instanceof Error ? err.message : "Export failed. Please try again.";
+      // Clipboard writes fail with opaque DOMExceptions (NotAllowedError in
+      // Chrome, SecurityError in Firefox); map them to actionable copy.
+      if (
+        err instanceof DOMException &&
+        (err.name === "NotAllowedError" || err.name === "SecurityError")
+      ) {
+        message =
+          "Could not access the clipboard — permission was denied. Download the file instead.";
+      }
       setExportError(message);
       toast({
         title: "Export failed",
@@ -182,7 +245,7 @@ export function ExportDialog({
     } finally {
       setIsExporting(false);
     }
-  }, [config, data, title, columns, onClose, toast]);
+  }, [config, data, title, columns, deliverAs, onClose, toast]);
 
   return (
     <Modal
@@ -203,6 +266,12 @@ export function ExportDialog({
           >
             {isExporting ? (
               "Exporting..."
+            ) : deliverAs === "clipboard" ? (
+              <>
+                <ClipboardCopy className="h-4 w-4" aria-hidden="true" />
+                Copy {config.columns.length} Column
+                {config.columns.length !== 1 ? "s" : ""}
+              </>
             ) : (
               <>
                 <Download className="h-4 w-4" aria-hidden="true" />
@@ -215,6 +284,33 @@ export function ExportDialog({
       }
     >
       <div className="space-y-6">
+        {/* Delivery — file download or clipboard copy */}
+        <fieldset>
+          <legend className="mb-2 text-sm font-medium text-text-secondary">
+            Delivery
+          </legend>
+          <SegmentedControl<"download" | "clipboard">
+            ariaLabel="Export delivery method"
+            value={deliverAs}
+            onChange={setDeliverAs}
+            size="sm"
+            options={[
+              {
+                value: "download",
+                label: "Save file",
+                icon: <Download className="h-3.5 w-3.5" aria-hidden="true" />,
+              },
+              {
+                value: "clipboard",
+                label: "Copy to clipboard",
+                icon: (
+                  <ClipboardCopy className="h-3.5 w-3.5" aria-hidden="true" />
+                ),
+              },
+            ]}
+          />
+        </fieldset>
+
         {/* Format Selection */}
         <fieldset>
           <legend className="mb-2 text-sm font-medium text-text-secondary">
@@ -242,7 +338,7 @@ export function ExportDialog({
                         format: e.target.value as ExportFormat,
                       }))
                     }
-                    className="h-4 w-4 text-brand-600 focus:ring-brand-500"
+                    className="h-4 w-4 text-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                   />
                   <span className="text-sm text-text-primary">{label}</span>
                 </label>
@@ -266,7 +362,7 @@ export function ExportDialog({
                   type="checkbox"
                   checked={config.columns.includes(col.key)}
                   onChange={() => handleColumnToggle(col.key)}
-                  className="h-4 w-4 rounded text-brand-600 focus:ring-brand-500"
+                  className="h-4 w-4 rounded text-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 />
                 <span className="text-sm text-text-primary">{col.label}</span>
               </label>
