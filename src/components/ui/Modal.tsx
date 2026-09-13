@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
+import { useFocusTrap } from "@/src/lib/hooks/useFocusTrap";
 
 // ============================================================================
 // Modal — accessible dialog primitive
@@ -34,9 +35,6 @@ const sizeClasses = {
   lg: "max-w-2xl",
 } as const;
 
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
 export function Modal({
   isOpen,
   onClose,
@@ -49,32 +47,16 @@ export function Modal({
   const containerRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
+  // Focus containment (Tab wrap edges) lives in the shared useFocusTrap
+  // hook so other overlay surfaces reuse the same, tested behavior; Modal
+  // keeps only Escape handling and scroll locking.
+  useFocusTrap(containerRef, isOpen);
+
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.stopPropagation();
         onClose();
-        return;
-      }
-
-      if (event.key !== "Tab" || !containerRef.current) return;
-
-      // Cycle focus within the dialog (focus trap)
-      const focusable = Array.from(
-        containerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
-      );
-      if (focusable.length === 0) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement as HTMLElement | null;
-
-      if (event.shiftKey && (active === first || !containerRef.current.contains(active))) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && active === last) {
-        event.preventDefault();
-        first.focus();
       }
     },
     [onClose]
