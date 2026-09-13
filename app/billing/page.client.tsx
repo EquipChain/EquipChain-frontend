@@ -2,15 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useSWRConfig } from "swr";
-import { CloudOff, FileText, Receipt, RefreshCw } from "lucide-react";
+import { CloudOff, Eye, Receipt, RefreshCw } from "lucide-react";
 import { ExportButton } from "@/src/components/export/ExportButton";
 import { PageHeader } from "@/src/components/layout/PageHeader";
 import { DataTable, type DataTableColumn } from "@/src/components/ui/DataTable";
 import { StatusBadge } from "@/src/components/ui/Badge";
 import { Button } from "@/src/components/ui/Button";
 import { Card } from "@/src/components/ui/Card";
-import { InvoiceTemplate } from "@/src/components/export/InvoiceTemplate";
 import type { InvoiceData } from "@/src/components/export/InvoiceTemplate";
+import { InvoiceDetailModal } from "@/src/components/billing/InvoiceDetailModal";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { useInvoices } from "@/src/lib/api/hooks";
 import {
@@ -97,7 +97,7 @@ function toInvoiceData(invoice: Invoice): InvoiceData {
 export function BillingPageClient() {
   const { data: invoices, isLoading, error, mutate } = useInvoices();
   const { mutate: globalMutate } = useSWRConfig();
-  const [previewId, setPreviewId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   // Stable identity for the SWR data fallback so the totals useMemo does
   // not recompute on unrelated renders.
@@ -114,7 +114,21 @@ export function BillingPageClient() {
   }, [rows]);
 
   const tableColumns: DataTableColumn<Invoice>[] = [
-    { key: "id", header: "Invoice #", mobileTitle: true },
+    {
+      key: "id",
+      header: "Invoice #",
+      mobileTitle: true,
+      cell: (row) => (
+        <button
+          type="button"
+          onClick={() => setDetailId(row.id)}
+          className="font-medium text-brand-600 hover:underline dark:text-brand-400"
+          aria-label={`View invoice ${row.id}`}
+        >
+          {row.id}
+        </button>
+      ),
+    },
     { key: "meterId", header: "Meter ID" },
     {
       key: "periodStart",
@@ -166,7 +180,7 @@ export function BillingPageClient() {
     },
   ];
 
-  const previewInvoice = rows.find((i) => i.id === previewId) ?? null;
+  const detailInvoice = rows.find((i) => i.id === detailId) ?? null;
 
   if (error) {
     return (
@@ -210,12 +224,11 @@ export function BillingPageClient() {
           <>
             <Button
               variant="secondary"
-              onClick={() => setPreviewId((id) => (id ? null : rows[0]?.id ?? null))}
-              aria-expanded={previewId !== null}
+              onClick={() => setDetailId(rows[0]?.id ?? null)}
               disabled={rows.length === 0}
             >
-              <FileText className="h-4 w-4" aria-hidden="true" />
-              {previewId ? "Hide Invoice" : "View Invoice"}
+              <Eye className="h-4 w-4" aria-hidden="true" />
+              View latest invoice
             </Button>
             <ExportButton
               title="Billing History"
@@ -252,12 +265,12 @@ export function BillingPageClient() {
         </Card>
       </div>
 
-      {/* Invoice preview for the selected row */}
-      {previewInvoice && (
-        <div className="w-full overflow-hidden rounded-xl border border-border shadow-lg">
-          <InvoiceTemplate data={toInvoiceData(previewInvoice)} />
-        </div>
-      )}
+      {/* Row-level detail: one invoice, focused, printable */}
+      <InvoiceDetailModal
+        invoice={detailInvoice}
+        onClose={() => setDetailId(null)}
+        toInvoiceData={toInvoiceData}
+      />
 
       <DataTable
         columns={tableColumns}
@@ -270,13 +283,6 @@ export function BillingPageClient() {
         searchPlaceholder="Search invoices…"
         caption={`${rows.length} invoices`}
         ariaLabel="Billing history"
-        toolbar={
-          previewId ? (
-            <Button variant="ghost" size="sm" onClick={() => setPreviewId(null)}>
-              Clear preview
-            </Button>
-          ) : undefined
-        }
       />
     </div>
   );
