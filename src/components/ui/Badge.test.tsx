@@ -10,6 +10,19 @@ describe("Badge", () => {
     expect(el).toHaveClass("rounded-full");
   });
 
+  it("renders a status dot by default, matching the variant color", () => {
+    render(<Badge variant="success">OK</Badge>);
+    // The dot is the first child INSIDE the badge span, before the text.
+    const dot = screen.getByText("OK").firstElementChild;
+    expect(dot).toHaveClass("bg-success");
+  });
+
+  it("omits the dot when withDot is false", () => {
+    render(<Badge variant="error" withDot={false}>Overdue</Badge>);
+    const el = screen.getByText("Overdue");
+    expect(el.previousElementSibling).toBeNull();
+  });
+
   it("applies the requested variant classes", () => {
     render(<Badge variant="error">Overdue</Badge>);
     expect(screen.getByText("Overdue")).toHaveClass("bg-error-light");

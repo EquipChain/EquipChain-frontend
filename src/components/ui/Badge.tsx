@@ -17,6 +17,8 @@ export type BadgeVariant =
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
+  /** Renders a colored status dot before the label (default true) */
+  withDot?: boolean;
 }
 
 const badgeVariantClasses: Record<BadgeVariant, string> = {
@@ -27,8 +29,18 @@ const badgeVariantClasses: Record<BadgeVariant, string> = {
   neutral: "bg-surface-tertiary text-text-muted",
 };
 
+/** Solid dot colors keyed to the same palette for at-a-glance status. */
+const badgeDotClasses: Record<BadgeVariant, string> = {
+  success: "bg-success",
+  warning: "bg-warning",
+  error: "bg-error",
+  info: "bg-info",
+  neutral: "bg-text-muted",
+};
+
 export function Badge({
   variant = "neutral",
+  withDot = true,
   className = "",
   children,
   ...rest
@@ -36,12 +48,18 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium",
         badgeVariantClasses[variant],
         className
       )}
       {...rest}
     >
+      {withDot && (
+        <span
+          aria-hidden="true"
+          className={`h-1.5 w-1.5 shrink-0 rounded-full ${badgeDotClasses[variant]}`}
+        />
+      )}
       {children}
     </span>
   );
