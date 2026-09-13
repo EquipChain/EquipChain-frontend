@@ -58,8 +58,7 @@ describe("SyncQueuePanel", () => {
 
     renderPanel();
     expect(await screen.findByText("Meter operation")).toBeInTheDocument();
-    // Retry count is split across text nodes ("2 retry" + "s").
-    const meta = screen.getByText(/retry/).closest("p");
+    const meta = screen.getByText(/retr/).closest("p");
     expect(meta?.textContent).toContain("2 retries");
     expect(screen.getByText("1 pending")).toBeInTheDocument();
   });
