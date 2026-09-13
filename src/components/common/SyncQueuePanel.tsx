@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Clock, Trash2, RefreshCw } from "lucide-react";
+import { Clock, Trash2, RefreshCw, CloudUpload } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
 import { Badge } from "@/src/components/ui/Badge";
 import {
@@ -9,16 +9,18 @@ import {
 } from "@/src/components/ui/ConfirmationDialog";
 import { useToast } from "@/src/components/ui/toast";
 import { getPendingOperations, removeOperation } from "@/src/lib/storage/db";
+import { processSyncQueue } from "@/src/lib/storage/syncProcessor";
 import type { QueuedOperation } from "@/src/lib/storage/db";
 import { formatRelativeTime } from "@/src/lib/utils/format";
 
 // ============================================================================
-// SyncQueuePanel — visibility into the offline operation queue
+// SyncQueuePanel — visibility and control over the offline operation queue
 // ============================================================================
 // Operations queue to IndexedDB when offline (meter registrations,
 // readings), but the only trace was a count in the OfflineBanner. Users
-// had no way to see WHAT was pending or remove stale entries. This panel
-// lists the queue and offers per-item and bulk removal.
+// had no way to see WHAT was pending, force a sync attempt, or remove
+// stale entries. This panel lists the queue and offers retry-now, per-item
+// and bulk removal.
 
 const OPERATION_LABELS: Record<QueuedOperation["type"], string> = {
   "meter-reading": "Meter operation",
@@ -29,6 +31,7 @@ const OPERATION_LABELS: Record<QueuedOperation["type"], string> = {
 export function SyncQueuePanel() {
   const [operations, setOperations] = useState<QueuedOperation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [confirmingClear, setConfirmingClear] = useState(false);
   const { toast } = useToast();
 
@@ -53,6 +56,36 @@ export function SyncQueuePanel() {
       clearInterval(interval);
     };
   }, [refresh]);
+
+  const retryNow = async () => {
+    if (!navigator.onLine) {
+      toast({
+        title: "Still offline",
+        description: "Operations will sync automatically when you reconnect.",
+        variant: "warning",
+      });
+      return;
+    }
+    setSyncing(true);
+    try {
+      const synced = await processSyncQueue();
+      if (synced > 0) {
+        toast({
+          title: `Synced ${synced} operation${synced === 1 ? "" : "s"}`,
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: "Nothing synced yet",
+          description: "Operations failed or are still pending — see retry counts.",
+          variant: "info",
+        });
+      }
+    } finally {
+      setSyncing(false);
+      await refresh();
+    }
+  };
 
   const removeItem = async (id: string) => {
     await removeOperation(id);
@@ -89,6 +122,18 @@ export function SyncQueuePanel() {
           )}
         </h2>
         <div className="flex items-center gap-1">
+          {operations.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void retryNow()}
+              disabled={syncing}
+              aria-label="Sync queued operations now"
+            >
+              <CloudUpload className="h-3.5 w-3.5" aria-hidden="true" />
+              Sync now
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -126,8 +171,8 @@ export function SyncQueuePanel() {
                   {OPERATION_LABELS[op.type] ?? op.type}
                 </p>
                 <p className="truncate text-xs text-text-muted">
-                  {formatRelativeTime(op.timestamp)} · {op.retries} retry
-                  {op.retries === 1 ? "" : "s"}
+                  {formatRelativeTime(op.timestamp)} ·{" "}
+                  {op.retries} {op.retries === 1 ? "retry" : "retries"}
                 </p>
               </div>
               <Button
