@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/src/lib/utils/cn";
 
 // ============================================================================
@@ -22,6 +22,8 @@ export interface TooltipProps {
   placement?: TooltipPlacement;
   /** Renders as inline-block wrapper (default) without breaking flex layouts */
   className?: string;
+  /** Hover delay in ms before showing; focus shows instantly (default 300) */
+  showDelayMs?: number;
 }
 
 const PLACEMENT_CLASSES: Record<TooltipPlacement, string> = {
@@ -36,17 +38,44 @@ export function Tooltip({
   children,
   placement = "top",
   className,
+  showDelayMs = 300,
 }: TooltipProps) {
   const [visible, setVisible] = useState(false);
   const tooltipId = useId();
+  const delayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearDelayTimer = () => {
+    if (delayTimer.current) {
+      clearTimeout(delayTimer.current);
+      delayTimer.current = null;
+    }
+  };
+
+  // Hover waits showDelayMs so sweeping a cursor across a toolbar of icon
+  // buttons doesn't strobe tooltips; keyboard focus still shows instantly
+  // since it is a deliberate act.
+  const showWithDelay = () => {
+    clearDelayTimer();
+    delayTimer.current = setTimeout(() => setVisible(true), showDelayMs);
+  };
+
+  const hide = () => {
+    clearDelayTimer();
+    setVisible(false);
+  };
+
+  useEffect(() => clearDelayTimer, []);
 
   return (
     <span
       className={cn("relative inline-block", className)}
-      onMouseEnter={() => setVisible(true)}
-      onMouseLeave={() => setVisible(false)}
-      onFocusCapture={() => setVisible(true)}
-      onBlurCapture={() => setVisible(false)}
+      onMouseEnter={showWithDelay}
+      onMouseLeave={hide}
+      onFocusCapture={() => {
+        clearDelayTimer();
+        setVisible(true);
+      }}
+      onBlurCapture={hide}
     >
       {/* Tooltip content is announced via aria-describedby on the child's
           wrapper rather than duplicating text; the child keeps its own
