@@ -171,3 +171,36 @@ export function sampleConsumptionSeries(days = 30): {
   }
   return series;
 }
+
+/**
+ * Deterministic cumulative reading history for one meter, ending at its
+ * current lastReading. The meter detail page renders this as a step chart;
+ * the generator walks backwards from the known end so the last point always
+ * agrees with the meter row shown beside it.
+ */
+export function sampleReadingHistory(
+  meter: Meter,
+  days = 30
+): { date: string; reading: number }[] {
+  const points: { date: string; reading: number }[] = [];
+  const end = new Date("2026-03-15T00:00:00Z");
+  const span = Math.max(meter.totalConsumption - meter.lastReading, 0);
+  for (let i = days - 1; i >= 0; i--) {
+    const day = new Date(end);
+    day.setUTCDate(day.getUTCDate() - i);
+    const dayIndex = days - 1 - i;
+    // Walk backwards: cumulative total at this point in history. The
+    // daily delta follows a weekly ripple so the step shape reads as
+    // device data rather than a straight ramp.
+    const remaining = days - 1 - dayIndex;
+    const dailyBase = span / days;
+    const ripple = dailyBase * 0.3 * Math.sin((dayIndex / 7) * Math.PI * 2);
+    const consumedByDay = Math.max(dailyBase + ripple, 0);
+    const reading = meter.lastReading - remaining * consumedByDay;
+    points.push({
+      date: day.toISOString().slice(0, 10),
+      reading: Math.round(Math.max(reading, 0) * 10) / 10,
+    });
+  }
+  return points;
+}

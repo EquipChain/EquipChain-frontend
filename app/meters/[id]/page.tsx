@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { generateMetadata as makeMetadata } from "@/src/lib/seo/metadata";
@@ -9,7 +10,8 @@ import { Card, CardHeader, CardContent } from "@/src/components/ui/Card";
 import { StatusBadge } from "@/src/components/ui/Badge";
 import { Progress } from "@/src/components/ui/Progress";
 import { Button } from "@/src/components/ui/Button";
-import { sampleMeters, meterUnit } from "@/src/lib/fixtures/demo";
+import { sampleMeters, sampleReadingHistory, meterUnit } from "@/src/lib/fixtures/demo";
+import { ErrorBoundary } from "@/src/components/common/ErrorBoundary";
 import {
   formatConsumption,
   formatCurrency,
@@ -25,6 +27,21 @@ import { breadcrumbListSchema } from "@/src/lib/seo/json-ld";
 // meter's readings, rate, or owner. This route renders the full profile.
 // It is a server component over the fixture list today; when the backend
 // lands, only the data source changes (params.id -> fetch).
+
+// Recharts is heavy (~100KB gz): the history chart loads in its own chunk
+// so the detail page's static content paints first, with a matching
+// skeleton in the meantime.
+const MeterReadingHistoryChart = dynamic(
+  () => import("@/src/components/charts/MeterReadingHistoryChart").then(
+    (mod) => mod.MeterReadingHistoryChart
+  ),
+  {
+    loading: () => (
+      <div className="h-60 animate-pulse rounded-lg bg-surface-tertiary" aria-hidden="true" />
+    ),
+    ssr: false,
+  }
+);
 
 interface MeterDetailProps {
   params: Promise<{ id: string }>;
@@ -81,6 +98,24 @@ export default async function MeterDetailPage({ params }: MeterDetailProps) {
           description={`${meter.type} meter · ${meter.id}`}
           actions={<StatusBadge status={meter.status} />}
         />
+
+        <Card>
+          <CardHeader
+            title="Reading history"
+            description="Cumulative readings over the last 30 days"
+          />
+          <CardContent>
+            {/* Chart-libs can throw on odd data; contain the blast radius so
+                the rest of the profile survives a rendering failure. */}
+            <ErrorBoundary sectionName="reading history chart">
+              <MeterReadingHistoryChart
+                data={sampleReadingHistory(meter, 30)}
+                unit={unit}
+                ariaLabel={`Cumulative readings for ${meter.name} over the last 30 days`}
+              />
+            </ErrorBoundary>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
