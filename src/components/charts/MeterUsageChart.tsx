@@ -10,7 +10,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { formatCompactNumber, formatDate } from "@/src/lib/utils/format";
+import {
+  formatCompactNumber,
+  formatDate,
+  formatMonthYearLocale,
+} from "@/src/lib/utils/format";
 import {
   KEY_BY_BUCKET,
   toUsageBuckets,
@@ -58,8 +62,8 @@ function ChartTooltip({ active, payload, unit }: TooltipEntry & { unit: string }
 const BUCKET_LABEL_FORMAT: Record<BucketSize, (date: Date) => string> = {
   daily: (d) => formatDate(d.toISOString().slice(0, 10)),
   weekly: (d) => `wk of ${formatDate(d.toISOString().slice(0, 10))}`,
-  monthly: (d) =>
-    d.toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" }),
+  // Locale-aware so the chart matches the rest of the date presentation.
+  monthly: (d) => formatMonthYearLocale(d.toISOString().slice(0, 10)),
 };
 
 export function MeterUsageChart({

@@ -1,6 +1,81 @@
 import { format, formatDistanceToNow, parseISO } from "date-fns";
 
 // ============================================================================
+// Locale-aware date formatting (Intl.DateTimeFormat)
+// ============================================================================
+// The app hard-codes en-US presentation everywhere; operators in other
+// locales read "03/15/2026" ambiguously and currency/units assume USD.
+// These helpers route date rendering through Intl with an explicit locale
+// parameter (defaulting to en-US so existing pixels do not shift) so the
+// app is one config change away from real i18n.
+
+/** App locale. Wire to a cookie/context when localization lands. */
+const DEFAULT_LOCALE = "en-US";
+
+/** Shared formatter cache — Intl formatter construction is expensive and
+ *  these are called per table cell on every render. */
+const formatterCache = new Map<string, Intl.DateTimeFormat>();
+
+function getCachedFormatter(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = `${locale}:${JSON.stringify(options)}`;
+  let formatter = formatterCache.get(key);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, { timeZone: "UTC", ...options });
+    formatterCache.set(key, formatter);
+  }
+  return formatter;
+}
+
+/** Parses an ISO string or Date; throws nothing, returns null when invalid. */
+function toDate(input: string | Date): Date | null {
+  const date = typeof input === "string" ? parseISO(input) : input;
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+/**
+ * Locale-aware medium date, e.g. en-US "Mar 15, 2026", de-DE "15. März 2026".
+ * Returns the raw input when unparseable so callers never render "Invalid Date".
+ */
+export function formatDateLocale(input: string | Date, locale = DEFAULT_LOCALE): string {
+  try {
+    const date = toDate(input);
+    if (!date) return String(input);
+    return getCachedFormatter(locale, { dateStyle: "medium" }).format(date);
+  } catch {
+    return String(input);
+  }
+}
+
+/**
+ * Locale-aware date + time, e.g. en-US "Mar 15, 2026, 2:32 PM".
+ */
+export function formatDateTimeLocale(input: string | Date, locale = DEFAULT_LOCALE): string {
+  try {
+    const date = toDate(input);
+    if (!date) return String(input);
+    return getCachedFormatter(locale, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(date);
+  } catch {
+    return String(input);
+  }
+}
+
+/**
+ * Locale-aware month + year for period labels, e.g. en-US "Mar 2026".
+ */
+export function formatMonthYearLocale(input: string | Date, locale = DEFAULT_LOCALE): string {
+  try {
+    const date = toDate(input);
+    if (!date) return String(input);
+    return getCachedFormatter(locale, { month: "short", year: "numeric" }).format(date);
+  } catch {
+    return String(input);
+  }
+}
+
+// ============================================================================
 // Formatters — single source of truth for user-facing data presentation
 // ============================================================================
 // Every page renders numbers and dates via raw string interpolation of
